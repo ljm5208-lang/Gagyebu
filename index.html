@@ -712,7 +712,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">초기 잔액 (원)</label>
-        <input type="number" inputmode="numeric" class="form-input" id="acc-initial" placeholder="현재 잔액 입력">
+        <input type="number" inputmode="decimal" class="form-input" id="acc-initial" placeholder="현재 잔액 (마이너스 입력 가능)">
       </div>
       <button class="btn-save" onclick="saveAccount()">추가하기</button>
     </div>
@@ -1230,7 +1230,7 @@ function closeAccSheetBg(e) { if (e.target === document.getElementById('acc-shee
 
 function saveAccount() {
   const name = document.getElementById('acc-name').value.trim();
-  const initial = parseInt(document.getElementById('acc-initial').value) || 0;
+  const initial = parseFloat(document.getElementById('acc-initial').value) || 0;
   if (!name) { alert('계좌 이름을 입력해주세요.'); return; }
   accounts.push({ id: Date.now().toString(), name, type: selectedAccType, initialAmount: initial });
   saveData(); closeAccSheet(); render();
@@ -1311,4 +1311,4 @@ setType('expense');
 render();
 </script>
 </body>
-</html>
+  </html>
