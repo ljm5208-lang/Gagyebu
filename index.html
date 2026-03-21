@@ -335,11 +335,9 @@
   .afc-balance.negative { color: var(--expense); }
   .afc-initial { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 
-  .afc-delete {
-    width: 28px; height: 28px; background: transparent; border: none;
-    color: var(--text-muted); font-size: 14px; cursor: pointer; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
+  .afc-edit { width: 28px; height: 28px; background: transparent; border: none; font-size: 14px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .afc-edit:active { background: var(--accent-bg); }
+  .afc-delete { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .afc-delete:active { background: var(--expense-bg); color: var(--expense); }
 
   /* RECURRING */
@@ -694,7 +692,7 @@
 <div class="sheet-bg" id="acc-sheet-bg" onclick="closeAccSheetBg(event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">계좌 추가</div>
+    <div class="sheet-title" id="acc-sheet-title">계좌 추가</div>
     <div class="sheet-body">
       <div class="form-group">
         <label class="form-label">계좌 종류</label>
@@ -712,9 +710,9 @@
       </div>
       <div class="form-group">
         <label class="form-label">초기 잔액 (원)</label>
-        <input type="number" inputmode="decimal" class="form-input" id="acc-initial" placeholder="현재 잔액 (마이너스 입력 가능)">
+        <input type="text" inputmode="decimal" class="form-input" id="acc-initial" placeholder="예: -300000 또는 1500000">
       </div>
-      <button class="btn-save" onclick="saveAccount()">추가하기</button>
+      <button class="btn-save" id="acc-save-btn" onclick="saveAccount()">추가하기</button>
     </div>
   </div>
 </div>
@@ -1046,8 +1044,9 @@ function renderAccounts() {
       </div>
       <div class="afc-right">
         <div class="afc-balance ${bal>=0?'positive':'negative'}">${bal<0?'-':''}${fmt(bal)}</div>
-        <div class="afc-initial">초기 ${fmt(acc.initialAmount)}</div>
+        <div class="afc-initial">초기 ${acc.initialAmount < 0 ? '-' : ''}${fmt(acc.initialAmount)}</div>
       </div>
+      <button class="afc-edit" onclick="openEditAccountSheet('${acc.id}')">✏️</button>
       <button class="afc-delete" onclick="deleteAccount('${acc.id}')">✕</button>
     </div>`;
   }).join('');
@@ -1210,6 +1209,8 @@ function deleteTx(id) {
 }
 
 // ACCOUNT SHEET
+let editingAccountId = null;
+
 function selectAccType(btn) {
   document.querySelectorAll('#acc-type-grid .type-grid-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -1217,6 +1218,9 @@ function selectAccType(btn) {
 }
 
 function openAccountSheet() {
+  editingAccountId = null;
+  document.getElementById('acc-sheet-title').textContent = '계좌 추가';
+  document.getElementById('acc-save-btn').textContent = '추가하기';
   document.getElementById('acc-name').value = '';
   document.getElementById('acc-initial').value = '';
   selectedAccType = 'checking';
@@ -1225,6 +1229,22 @@ function openAccountSheet() {
   });
   document.getElementById('acc-sheet-bg').classList.add('open');
 }
+
+function openEditAccountSheet(id) {
+  const acc = accounts.find(a => a.id === id);
+  if (!acc) return;
+  editingAccountId = id;
+  document.getElementById('acc-sheet-title').textContent = '계좌 수정';
+  document.getElementById('acc-save-btn').textContent = '저장하기';
+  document.getElementById('acc-name').value = acc.name;
+  document.getElementById('acc-initial').value = acc.initialAmount;
+  selectedAccType = acc.type;
+  document.querySelectorAll('#acc-type-grid .type-grid-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.type === acc.type);
+  });
+  document.getElementById('acc-sheet-bg').classList.add('open');
+}
+
 function closeAccSheet() { document.getElementById('acc-sheet-bg').classList.remove('open'); }
 function closeAccSheetBg(e) { if (e.target === document.getElementById('acc-sheet-bg')) closeAccSheet(); }
 
@@ -1232,7 +1252,12 @@ function saveAccount() {
   const name = document.getElementById('acc-name').value.trim();
   const initial = parseFloat(document.getElementById('acc-initial').value) || 0;
   if (!name) { alert('계좌 이름을 입력해주세요.'); return; }
-  accounts.push({ id: Date.now().toString(), name, type: selectedAccType, initialAmount: initial });
+  if (editingAccountId) {
+    const idx = accounts.findIndex(a => a.id === editingAccountId);
+    if (idx !== -1) accounts[idx] = { ...accounts[idx], name, type: selectedAccType, initialAmount: initial };
+  } else {
+    accounts.push({ id: Date.now().toString(), name, type: selectedAccType, initialAmount: initial });
+  }
   saveData(); closeAccSheet(); render();
 }
 
@@ -1311,4 +1336,4 @@ setType('expense');
 render();
 </script>
 </body>
-  </html>
+</html>
