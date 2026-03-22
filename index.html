@@ -650,7 +650,7 @@
 <div class="sheet-bg" id="sheet-bg" onclick="closeSheetBg(event)">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">새 내역 추가</div>
+    <div class="sheet-title" id="tx-sheet-title">새 내역 추가</div>
     <div class="sheet-body">
       <div class="type-toggle">
         <button class="type-btn active expense" id="btn-expense" onclick="setType('expense')">지출</button>
@@ -683,7 +683,7 @@
         <label class="form-label">받는 계좌</label>
         <select class="form-select" id="input-acc-to"></select>
       </div>
-      <button class="btn-save" onclick="saveTransaction()">저장하기</button>
+      <button class="btn-save" id="tx-save-btn" onclick="saveTransaction()">저장하기</button>
     </div>
   </div>
 </div>
@@ -1017,6 +1017,7 @@ function renderTx(txs) {
           </div>
           <div class="tx-right">
             <div class="tx-amount ${amtClass}">${amtPrefix}${fmt(t.amount)}</div>
+            <button class="tx-delete" onclick="editTx('${t.id}')">✏️</button>
             <button class="tx-delete" onclick="deleteTx('${t.id}')">✕</button>
           </div>
         </div>`;
@@ -1151,11 +1152,38 @@ function buildAccountOptions(selectId, excludeId) {
   }
 }
 
+let editingTxId = null;
+
 function openSheet() {
+  editingTxId = null;
+  document.getElementById('tx-sheet-title').textContent = '새 내역 추가';
+  document.getElementById('tx-save-btn').textContent = '저장하기';
   document.getElementById('input-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('input-amount').value = '';
   document.getElementById('input-desc').value = '';
   setType('expense');
+  document.getElementById('sheet-bg').classList.add('open');
+}
+
+function editTx(id) {
+  const t = transactions.find(t => t.id === id);
+  if (!t) return;
+  editingTxId = id;
+  document.getElementById('tx-sheet-title').textContent = '내역 수정';
+  document.getElementById('tx-save-btn').textContent = '수정하기';
+  document.getElementById('input-date').value = t.date;
+  document.getElementById('input-amount').value = t.amount;
+  document.getElementById('input-desc').value = t.desc || '';
+  setType(t.type);
+  // 카테고리 선택
+  if (t.type !== 'transfer') {
+    document.getElementById('input-cat').value = t.category;
+    // 계좌 선택
+    if (t.accountId) document.getElementById('input-acc-from').value = t.accountId;
+  } else {
+    if (t.fromAccountId) document.getElementById('input-acc-from').value = t.fromAccountId;
+    if (t.toAccountId) document.getElementById('input-acc-to').value = t.toAccountId;
+  }
   document.getElementById('sheet-bg').classList.add('open');
 }
 function closeSheet() { document.getElementById('sheet-bg').classList.remove('open'); }
@@ -1189,15 +1217,23 @@ function saveTransaction() {
   const desc = document.getElementById('input-desc').value.trim();
   if (!date || !amount || amount <= 0) { alert('날짜와 금액을 입력해주세요.'); return; }
 
+  let newTx;
   if (modalType === 'transfer') {
     const fromId = document.getElementById('input-acc-from').value;
     const toId = document.getElementById('input-acc-to').value;
     if (fromId === toId) { alert('출금 계좌와 입금 계좌가 같습니다.'); return; }
-    transactions.push({ id: Date.now().toString(), date, amount, type: 'transfer', fromAccountId: fromId, toAccountId: toId, desc: desc || '계좌 이체' });
+    newTx = { date, amount, type: 'transfer', fromAccountId: fromId, toAccountId: toId, desc: desc || '계좌 이체' };
   } else {
     const cat = document.getElementById('input-cat').value;
     const accId = document.getElementById('input-acc-from').value;
-    transactions.push({ id: Date.now().toString(), date, amount, type: modalType, category: cat, accountId: accId, desc });
+    newTx = { date, amount, type: modalType, category: cat, accountId: accId, desc };
+  }
+
+  if (editingTxId) {
+    const idx = transactions.findIndex(t => t.id === editingTxId);
+    if (idx !== -1) transactions[idx] = { ...transactions[idx], ...newTx };
+  } else {
+    transactions.push({ id: Date.now().toString(), ...newTx });
   }
   saveData(); closeSheet(); render();
 }
