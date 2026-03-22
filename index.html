@@ -254,14 +254,18 @@
   .cat-amt { font-size: 11px; font-weight: 600; color: var(--text); min-width: 52px; text-align: right; flex-shrink: 0; }
   .cat-pct { font-size: 10px; color: var(--text-muted); min-width: 32px; text-align: right; flex-shrink: 0; }
 
-  /* DONUT CHART */
-  .donut-wrap { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-  .donut-svg { flex-shrink: 0; width: 70px; height: 70px; }
-  .donut-legend { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-  .donut-leg-item { display: flex; align-items: center; gap: 6px; }
-  .donut-leg-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
-  .donut-leg-name { font-size: 11px; color: var(--text-dim); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .donut-leg-pct { font-size: 11px; font-weight: 700; color: var(--text); flex-shrink: 0; }
+  /* STACKED BAR CHART */
+  .stacked-bar-wrap { margin-bottom: 14px; }
+  .stacked-bar {
+    display: flex; height: 22px; border-radius: 8px; overflow: hidden; margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+  .stacked-seg { height: 100%; transition: width 0.5s ease; }
+  .stacked-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+  .stacked-leg-item { display: flex; align-items: center; gap: 5px; }
+  .stacked-leg-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .stacked-leg-name { font-size: 11px; color: var(--text-dim); }
+  .stacked-leg-pct { font-size: 11px; font-weight: 700; color: var(--text); }
 
   /* QUICK STATS */
   .quick-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
@@ -981,52 +985,30 @@ function renderCatList(elId, txs, type) {
   const total = sorted.reduce((s,[,v])=>s+v, 0);
   const max = sorted[0][1];
 
-  // 도넛 차트 SVG 생성
-  const R = 44, r = 28, cx = 50, cy = 50;
-  const circumference = 2 * Math.PI * R;
-  let offset = 0;
-  const gap = 1.5;
+  // 스택 바 세그먼트
   const segments = sorted.map(([cat, amt]) => {
-    const pct = amt / total;
-    const dash = Math.max(pct * circumference - gap, 0);
-    const seg = { cat, amt, pct, dash, offset };
-    offset += pct * circumference;
-    return seg;
-  });
+    const pct = (amt / total * 100).toFixed(1);
+    return `<div class="stacked-seg" style="width:${pct}%;background:${CAT_COLORS[cat]||'#999'}" title="${cat} ${pct}%"></div>`;
+  }).join('');
 
-  const svgSegments = segments.map(s => `
-    <circle cx="${cx}" cy="${cy}" r="${R}"
-      fill="none" stroke="${CAT_COLORS[s.cat]||'#999'}" stroke-width="${R - r}"
-      stroke-dasharray="${s.dash} ${circumference - s.dash}"
-      stroke-dashoffset="${circumference * 0.25 - s.offset}"
-      style="transition: stroke-dasharray 0.5s ease;"
-    />`).join('');
-
-  const topCat = sorted[0][0];
-  const topPct = Math.round((sorted[0][1]/total)*100);
-
-  const donutSvg = `
-    <svg class="donut-svg" width="70" height="70" viewBox="0 0 100 100">
-      <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--bg2)" stroke-width="${R-r}"/>
-      ${svgSegments}
-      <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--text)">${topPct}%</text>
-      <text x="${cx}" y="${cy + 10}" text-anchor="middle" font-size="8" fill="var(--text-muted)">${topCat}</text>
-    </svg>`;
-
-  const legendItems = sorted.slice(0, 6).map(([cat, amt]) => {
-    const pct = Math.round((amt/total)*100);
-    return `<div class="donut-leg-item">
-      <div class="donut-leg-dot" style="background:${CAT_COLORS[cat]||'#999'}"></div>
-      <div class="donut-leg-name">${CAT_EMOJI[cat]||'📌'} ${cat}</div>
-      <div class="donut-leg-pct">${pct}%</div>
+  // 범례
+  const legend = sorted.map(([cat, amt]) => {
+    const pct = Math.round(amt / total * 100);
+    return `<div class="stacked-leg-item">
+      <div class="stacked-leg-dot" style="background:${CAT_COLORS[cat]||'#999'}"></div>
+      <span class="stacked-leg-name">${CAT_EMOJI[cat]||''} ${cat}</span>
+      <span class="stacked-leg-pct">${pct}%</span>
     </div>`;
   }).join('');
 
-  const donutHtml = `<div class="donut-wrap">${donutSvg}<div class="donut-legend">${legendItems}</div></div>`;
+  const stackedHtml = `<div class="stacked-bar-wrap">
+    <div class="stacked-bar">${segments}</div>
+    <div class="stacked-legend">${legend}</div>
+  </div>`;
 
   // 바 차트 목록
   const barList = sorted.map(([cat, amt]) => {
-    const pct = Math.round((amt/total)*100);
+    const pct = Math.round(amt / total * 100);
     return `<div class="cat-item">
       <div class="cat-emoji">${CAT_EMOJI[cat]||'📌'}</div>
       <div class="cat-name">${cat}</div>
@@ -1036,7 +1018,7 @@ function renderCatList(elId, txs, type) {
     </div>`;
   }).join('');
 
-  el.innerHTML = donutHtml + `<div class="cat-list">${barList}</div>`;
+  el.innerHTML = stackedHtml + `<div class="cat-list">${barList}</div>`;
 }
 
 function renderTx(txs) {
