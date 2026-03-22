@@ -1006,7 +1006,7 @@ function renderCatList(elId, txs, type) {
   const topPct = Math.round((sorted[0][1]/total)*100);
 
   const donutSvg = `
-    <svg class="donut-svg" width="80" height="80" viewBox="0 0 100 100">
+    <svg class="donut-svg" width="70" height="70" viewBox="0 0 100 100">
       <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--bg2)" stroke-width="${R-r}"/>
       ${svgSegments}
       <text x="${cx}" y="${cy - 4}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--text)">${topPct}%</text>
