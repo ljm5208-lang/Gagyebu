@@ -6,498 +6,488 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>가계부</title>
 <style>
-  :root {
-    --bg: #F7F5F2;
-    --bg2: #EEEAE4;
-    --surface: #FFFFFF;
-    --border: #E2DDD6;
-    --border2: #CCC8C0;
-    --text: #1C1A17;
-    --text-dim: #6B6560;
-    --text-muted: #A8A29A;
-    --income: #2D7D46;
-    --income-bg: #EBF5EF;
-    --expense: #C0392B;
-    --expense-bg: #FDECEA;
-    --accent: #E8760A;
-    --accent-bg: #FEF3E8;
-    --accent-dark: #B85D06;
-    --blue: #2563EB;
-    --blue-bg: #EFF4FF;
-    --purple: #7C3AED;
-    --purple-bg: #F5F0FF;
-    --radius: 16px;
-    --shadow: 0 2px 12px rgba(0,0,0,0.07);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-top: env(safe-area-inset-top, 0px);
-  }
+/* ── VARIABLES ── */
+:root {
+  --bg:         #F7F5F2;
+  --bg2:        #EEEAE4;
+  --surface:    #FFFFFF;
+  --border:     #E2DDD6;
+  --border2:    #CCC8C0;
+  --text:       #1C1A17;
+  --text-dim:   #6B6560;
+  --text-muted: #A8A29A;
+  --income:     #2D7D46;
+  --income-bg:  #EBF5EF;
+  --expense:    #C0392B;
+  --expense-bg: #FDECEA;
+  --accent:     #E8760A;
+  --accent-bg:  #FEF3E8;
+  --accent-dk:  #B85D06;
+  --blue:       #2563EB;
+  --blue-bg:    #EFF4FF;
+  --purple:     #7C3AED;
+  --purple-bg:  #F5F0FF;
+  --radius:     16px;
+  --shadow:     0 2px 12px rgba(0,0,0,0.07);
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow: hidden; }
+/* ── RESET ── */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
+  max-width: 430px;
+  margin: 0 auto;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', '맑은 고딕', sans-serif;
-    max-width: 430px;
-    margin: 0 auto;
-  }
+/* ── LAYOUT ── */
+.shell { display: flex; flex-direction: column; height: 100dvh; height: 100vh; overflow: hidden; }
 
-  .shell {
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
-    height: 100vh;
-    overflow: hidden;
-  }
+.body-scroll {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(72px + var(--safe-bottom));
+  background: var(--bg);
+}
 
-  /* HEADER */
-  .header {
-    padding: calc(var(--safe-top) + 14px) 20px 14px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    z-index: 20;
-    box-shadow: var(--shadow);
-  }
+.view { display: none; padding: 16px; }
+.view.active { display: block; }
 
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
+/* ── HEADER ── */
+.header {
+  padding: calc(var(--safe-top) + 14px) 20px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 20;
+  box-shadow: var(--shadow);
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.app-title { font-size: 20px; font-weight: 700; color: var(--accent); }
+.add-fab {
+  width: 38px; height: 38px;
+  background: var(--accent); border: none; border-radius: 12px;
+  color: #fff; font-size: 26px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(232,118,10,0.35);
+  transition: transform 0.15s;
+}
+.add-fab:active { transform: scale(0.92); }
 
-  .app-title { font-size: 20px; font-weight: 700; color: var(--accent); }
+.month-row { display: flex; align-items: center; justify-content: space-between; }
+.month-nav { display: flex; align-items: center; gap: 4px; }
+.month-arrow {
+  width: 32px; height: 32px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text-dim); font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s;
+}
+.month-arrow:active { background: var(--border); }
+.month-label { font-size: 15px; font-weight: 600; min-width: 88px; text-align: center; }
 
-  .add-fab {
-    width: 38px; height: 38px;
-    background: var(--accent);
-    border: none; border-radius: 12px;
-    color: #fff; font-size: 26px; font-weight: 300;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(232,118,10,0.35);
-    transition: transform 0.15s;
-    line-height: 1;
-  }
-  .add-fab:active { transform: scale(0.92); }
+.month-summary { display: flex; gap: 14px; }
+.ms-item { text-align: right; }
+.ms-label { font-size: 10px; color: var(--text-muted); }
+.ms-value { font-size: 13px; font-weight: 600; }
+.ms-value.income { color: var(--income); }
+.ms-value.expense { color: var(--expense); }
 
-  .month-row { display: flex; align-items: center; justify-content: space-between; }
-  .month-nav { display: flex; align-items: center; gap: 4px; }
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 calc(8px + var(--safe-bottom));
+  display: flex; z-index: 30;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 0; background: transparent; border: none;
+  cursor: pointer; transition: transform 0.15s;
+}
+.nav-item:active { transform: scale(0.9); }
+.nav-item-icon { font-size: 20px; line-height: 1; transition: transform 0.2s; }
+.nav-item-label { font-size: 10px; color: var(--text-muted); font-weight: 500; transition: color 0.2s; }
+.nav-item.active .nav-item-icon { transform: scale(1.15); }
+.nav-item.active .nav-item-label { color: var(--accent); font-weight: 700; }
 
-  .month-arrow {
-    width: 32px; height: 32px;
-    background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
-    color: var(--text-dim); font-size: 12px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: background 0.15s;
-  }
-  .month-arrow:active { background: var(--border); }
+/* ── CARD ── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px; margin-bottom: 14px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 14px; font-weight: 700; margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.badge {
+  font-size: 11px; font-weight: 600; padding: 3px 8px;
+  border-radius: 20px; background: var(--bg2); color: var(--text-dim);
+}
 
-  .month-label { font-size: 15px; font-weight: 600; color: var(--text); min-width: 88px; text-align: center; }
+/* ── HERO ── */
+.balance-hero {
+  background: linear-gradient(135deg, var(--accent), #F59020);
+  border-radius: var(--radius); padding: 22px 20px; margin-bottom: 14px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 6px 24px rgba(232,118,10,0.28);
+}
+.balance-hero::before {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 130px; height: 130px; background: rgba(255,255,255,0.12);
+  border-radius: 50%; pointer-events: none;
+}
+.bh-label { font-size: 11px; color: rgba(255,255,255,0.8); margin-bottom: 4px; }
+.bh-amount { font-size: 36px; font-weight: 700; color: #fff; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
+.bh-amount.negative { color: #FFD0CC; }
+.bh-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bh-item { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 10px 12px; }
+.bh-item-label { font-size: 10px; color: rgba(255,255,255,0.8); margin-bottom: 3px; }
+.bh-item-value { font-size: 17px; font-weight: 700; color: #fff; }
 
-  .month-summary { display: flex; gap: 14px; }
-  .ms-item { text-align: right; }
-  .ms-label { font-size: 10px; color: var(--text-muted); }
-  .ms-value { font-size: 13px; font-weight: 600; }
-  .ms-value.income { color: var(--income); }
-  .ms-value.expense { color: var(--expense); }
+/* ── ACCOUNT CARDS ── */
+.accounts-scroll {
+  display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px;
+  scrollbar-width: none;
+}
+.accounts-scroll::-webkit-scrollbar { display: none; }
 
-  /* BODY */
-  .body-scroll {
-    flex: 1; overflow-y: auto; overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: calc(72px + var(--safe-bottom));
-    background: var(--bg);
-  }
+.account-card {
+  flex-shrink: 0; width: 160px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.account-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px; border-radius: 0 0 14px 14px;
+}
+.account-card.type-checking::after  { background: var(--blue); }
+.account-card.type-savings::after   { background: var(--income); }
+.account-card.type-card::after      { background: var(--expense); }
+.account-card.type-investment::after{ background: var(--purple); }
+.account-card.type-cash::after      { background: var(--accent); }
+.acc-icon  { font-size: 20px; margin-bottom: 8px; }
+.acc-name  { font-size: 12px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acc-type  { font-size: 10px; color: var(--text-muted); margin-bottom: 8px; }
+.acc-bal   { font-size: 15px; font-weight: 700; }
+.acc-bal.positive { color: var(--text); }
+.acc-bal.negative { color: var(--expense); }
 
-  .view { display: none; padding: 16px; }
-  .view.active { display: block; }
+.add-account-card {
+  flex-shrink: 0; width: 120px;
+  background: transparent; border: 1.5px dashed var(--border2);
+  border-radius: 14px; padding: 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; cursor: pointer; color: var(--text-muted); font-size: 12px; font-weight: 600;
+}
+.add-account-card:active { background: var(--bg2); }
 
-  /* BALANCE HERO */
-  .balance-hero {
-    background: linear-gradient(135deg, var(--accent) 0%, #F59020 100%);
-    border-radius: var(--radius); padding: 22px 20px; margin-bottom: 14px;
-    position: relative; overflow: hidden;
-    box-shadow: 0 6px 24px rgba(232,118,10,0.28);
-  }
-  .balance-hero::before {
-    content: ''; position: absolute; top: -30px; right: -30px;
-    width: 130px; height: 130px; background: rgba(255,255,255,0.12);
-    border-radius: 50%; pointer-events: none;
-  }
-  .bh-label { font-size: 11px; color: rgba(255,255,255,0.8); margin-bottom: 4px; }
-  .bh-amount { font-size: 36px; font-weight: 700; color: #fff; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
-  .bh-amount.negative { color: #FFD0CC; }
-  .bh-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .bh-item { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 10px 12px; }
-  .bh-item-label { font-size: 10px; color: rgba(255,255,255,0.8); margin-bottom: 3px; }
-  .bh-item-value { font-size: 17px; font-weight: 700; color: #fff; }
+/* ── BUDGET BAR ── */
+.budget-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow); }
+.budget-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.budget-card-title { font-size: 13px; font-weight: 700; }
+.budget-card-amounts { font-size: 11px; color: var(--text-dim); }
+.budget-bar-bg { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+.budget-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.budget-bar-fill.ok   { background: linear-gradient(90deg, var(--income), #4CAF50); }
+.budget-bar-fill.warn { background: linear-gradient(90deg, #F59020, var(--accent)); }
+.budget-bar-fill.over { background: linear-gradient(90deg, var(--expense), #E74C3C); }
+.budget-card-footer { display: flex; justify-content: space-between; font-size: 11px; }
+.budget-remain { font-weight: 700; }
+.budget-remain.ok   { color: var(--income); }
+.budget-remain.warn { color: var(--accent); }
+.budget-remain.over { color: var(--expense); }
+.budget-pct { color: var(--text-muted); }
 
-  /* ACCOUNT CARDS SCROLL */
-  .accounts-scroll {
-    display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px;
-    scrollbar-width: none;
-  }
-  .accounts-scroll::-webkit-scrollbar { display: none; }
+.no-budget-btn {
+  width: 100%; padding: 11px;
+  background: var(--accent-bg); border: 1.5px dashed var(--accent);
+  border-radius: 10px; color: var(--accent); font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.no-budget-btn:active { background: #FDE8CC; }
 
-  .account-card {
-    flex-shrink: 0; width: 160px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 14px; padding: 14px;
-    box-shadow: var(--shadow); cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    position: relative; overflow: hidden;
-  }
+/* ── ALERT ── */
+.alert-banner {
+  border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.alert-banner.danger { background: var(--expense-bg); border: 1.5px solid #F5A9A3; }
+.alert-banner.warn   { background: #FFF8E8; border: 1.5px solid #F5C07A; }
+.alert-icon { font-size: 20px; }
+.alert-title { font-size: 13px; font-weight: 700; }
+.alert-title.danger { color: var(--expense); }
+.alert-title.warn   { color: var(--accent); }
+.alert-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 
-  .account-card::after {
-    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-    height: 3px; border-radius: 0 0 14px 14px;
-  }
+/* ── CHART ── */
+.chart-legend { display: flex; gap: 10px; }
+.leg { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-dim); }
+.leg-dot { width: 7px; height: 7px; border-radius: 50%; }
 
-  .account-card.type-checking::after { background: var(--blue); }
-  .account-card.type-savings::after { background: var(--income); }
-  .account-card.type-card::after { background: var(--expense); }
-  .account-card.type-investment::after { background: var(--purple); }
-  .account-card.type-cash::after { background: var(--accent); }
+.chart-bars { display: flex; align-items: flex-end; gap: 4px; padding-bottom: 22px; position: relative; }
+.chart-bars::after { content: ''; position: absolute; bottom: 22px; left: 0; right: 0; height: 1px; background: var(--border); }
+.bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative; }
+.bars { display: flex; align-items: flex-end; gap: 2px; flex: 1; width: 100%; justify-content: center; padding-bottom: 4px; }
+.bar { width: 9px; border-radius: 3px 3px 0 0; min-height: 2px; }
+.bar.income-bar  { background: var(--income); }
+.bar.expense-bar { background: var(--expense); }
+.bar-label { position: absolute; bottom: 0; font-size: 9px; color: var(--text-muted); text-align: center; width: 100%; }
 
-  .account-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(232,118,10,0.2); }
+/* ── CATEGORY ── */
+.cat-list { display: flex; flex-direction: column; gap: 11px; }
+.cat-item { display: flex; align-items: center; gap: 8px; }
+.cat-emoji { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
+.cat-name  { font-size: 12px; color: var(--text-dim); width: 58px; flex-shrink: 0; }
+.cat-bar-bg { flex: 1; height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+.cat-amt { font-size: 11px; font-weight: 600; min-width: 52px; text-align: right; flex-shrink: 0; }
+.cat-pct { font-size: 10px; color: var(--text-muted); min-width: 32px; text-align: right; flex-shrink: 0; }
 
-  .acc-icon { font-size: 20px; margin-bottom: 8px; }
-  .acc-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .acc-type { font-size: 10px; color: var(--text-muted); margin-bottom: 8px; }
-  .acc-balance { font-size: 15px; font-weight: 700; }
-  .acc-balance.positive { color: var(--text); }
-  .acc-balance.negative { color: var(--expense); }
+.stacked-bar { display: flex; height: 22px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.stacked-seg { height: 100%; transition: width 0.5s ease; }
+.stacked-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 14px; }
+.stacked-leg-item { display: flex; align-items: center; gap: 5px; }
+.stacked-leg-dot  { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.stacked-leg-name { font-size: 11px; color: var(--text-dim); }
+.stacked-leg-pct  { font-size: 11px; font-weight: 700; }
 
-  .add-account-card {
-    flex-shrink: 0; width: 120px;
-    background: transparent; border: 1.5px dashed var(--border2);
-    border-radius: 14px; padding: 14px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 6px; cursor: pointer; transition: background 0.15s;
-    color: var(--text-muted); font-size: 12px; font-weight: 600;
-  }
-  .add-account-card:active { background: var(--bg2); }
-  .add-account-plus { font-size: 24px; color: var(--border2); }
+/* ── QUICK STATS ── */
+.quick-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.qs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 12px; box-shadow: var(--shadow); position: relative; overflow: hidden; }
+.qs-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; border-radius: 0 0 12px 12px; }
+.qs-card.inc::after { background: var(--income); }
+.qs-card.exp::after { background: var(--expense); }
+.qs-card.bal::after { background: var(--accent); }
+.qs-label { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
+.qs-value { font-size: 13px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2; }
+.qs-value.income   { color: var(--income); }
+.qs-value.expense  { color: var(--expense); }
+.qs-value.bal      { color: var(--accent); }
+.qs-value.negative { color: var(--expense); }
+.qs-sub { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
 
-  /* BUDGET BAR */
-  .budget-status-card {
-    background: var(--surface); border-radius: var(--radius);
-    padding: 16px 18px; margin-bottom: 14px;
-    border: 1px solid var(--border); box-shadow: var(--shadow);
-  }
-  .bsc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .bsc-title { font-size: 13px; font-weight: 700; }
-  .bsc-amounts { font-size: 11px; color: var(--text-dim); }
-  .budget-bar-bg { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
-  .budget-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
-  .budget-bar-fill.ok { background: linear-gradient(90deg, var(--income), #4CAF50); }
-  .budget-bar-fill.warn { background: linear-gradient(90deg, #F59020, #E8760A); }
-  .budget-bar-fill.over { background: linear-gradient(90deg, var(--expense), #E74C3C); }
-  .bsc-footer { display: flex; justify-content: space-between; font-size: 11px; }
-  .bsc-remain { font-weight: 700; }
-  .bsc-remain.ok { color: var(--income); }
-  .bsc-remain.warn { color: var(--accent); }
-  .bsc-remain.over { color: var(--expense); }
-  .bsc-percent { color: var(--text-muted); }
-  .no-budget-btn {
-    width: 100%; padding: 11px;
-    background: var(--accent-bg); border: 1.5px dashed var(--accent); border-radius: 10px;
-    color: var(--accent); font-size: 13px; font-weight: 700; cursor: pointer;
-    font-family: inherit;
-  }
-  .no-budget-btn:active { background: #FDE8CC; }
+/* ── SAVING BANNER ── */
+.saving-banner {
+  background: linear-gradient(135deg, var(--accent-bg), #FFF8EE);
+  border: 1.5px solid #F5C07A; border-radius: var(--radius);
+  padding: 16px 18px; margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow);
+}
+.sb-label { font-size: 13px; color: var(--text-dim); font-weight: 700; }
+.sb-desc  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.sb-value { font-size: 30px; font-weight: 700; color: var(--accent); }
 
-  /* CARD */
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px; margin-bottom: 14px;
-    box-shadow: var(--shadow);
-  }
-  .card-title {
-    font-size: 14px; font-weight: 700; color: var(--text);
-    margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between;
-  }
-  .card-title-badge {
-    font-size: 11px; font-weight: 600; padding: 3px 8px;
-    border-radius: 20px; background: var(--bg2); color: var(--text-dim);
-  }
+/* ── TRANSACTIONS ── */
+.tx-section { margin-bottom: 14px; }
+.tx-date-label { font-size: 11px; color: var(--text-muted); font-weight: 500; padding: 6px 4px; margin-bottom: 6px; border-bottom: 1px solid var(--border); }
+.tx-item {
+  display: flex; align-items: center; padding: 12px 14px;
+  background: var(--surface); border-radius: 12px; margin-bottom: 8px;
+  gap: 12px; border: 1px solid var(--border); box-shadow: var(--shadow);
+  cursor: pointer; transition: background 0.15s;
+}
+.tx-item:active { background: var(--bg2); box-shadow: none; }
+.tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.tx-icon.income-icon   { background: var(--income-bg); }
+.tx-icon.expense-icon  { background: var(--expense-bg); }
+.tx-icon.transfer-icon { background: var(--purple-bg); }
+.tx-icon.recurring-icon{ background: var(--blue-bg); }
+.tx-info { flex: 1; min-width: 0; }
+.tx-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tx-meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
+.tx-cat { font-size: 11px; color: var(--text-muted); }
+.tx-badge { font-size: 9px; padding: 2px 6px; border-radius: 20px; font-weight: 700; }
+.tx-badge.acc      { background: var(--bg2); color: var(--text-dim); }
+.tx-badge.recurring{ background: var(--blue-bg); color: var(--blue); }
+.tx-badge.transfer { background: var(--purple-bg); color: var(--purple); }
+.tx-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.tx-amount { font-size: 15px; font-weight: 700; }
+.tx-amount.income   { color: var(--income); }
+.tx-amount.expense  { color: var(--expense); }
+.tx-amount.transfer { color: var(--purple); }
+.tx-del {
+  width: 26px; height: 26px; background: transparent; border: none;
+  color: var(--text-muted); font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 6px; flex-shrink: 0;
+}
+.tx-del:active { background: var(--expense-bg); color: var(--expense); }
 
-  /* CHART */
-  .chart-legend { display: flex; gap: 10px; }
-  .leg { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-dim); }
-  .leg-dot { width: 7px; height: 7px; border-radius: 50%; }
-  .chart-bars {
-    display: flex; align-items: flex-end; gap: 4px;
-    height: 100px; padding-bottom: 22px; position: relative;
-  }
-  .chart-bars::after {
-    content: ''; position: absolute; bottom: 22px; left: 0; right: 0;
-    height: 1px; background: var(--border);
-  }
-  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; position: relative; }
-  .bars { display: flex; align-items: flex-end; gap: 2px; flex: 1; width: 100%; justify-content: center; padding-bottom: 4px; }
-  .bar { width: 9px; border-radius: 3px 3px 0 0; min-height: 2px; }
-  .bar.income-bar { background: var(--income); }
-  .bar.expense-bar { background: var(--expense); }
-  .bar-label { position: absolute; bottom: 0; font-size: 9px; color: var(--text-muted); text-align: center; width: 100%; }
+/* ── ACCOUNTS PAGE ── */
+.account-full-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+  box-shadow: var(--shadow);
+}
+.afc-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.afc-icon.type-checking  { background: var(--blue-bg); }
+.afc-icon.type-savings   { background: var(--income-bg); }
+.afc-icon.type-card      { background: var(--expense-bg); }
+.afc-icon.type-investment{ background: var(--purple-bg); }
+.afc-icon.type-cash      { background: var(--accent-bg); }
+.afc-info { flex: 1; min-width: 0; }
+.afc-name { font-size: 15px; font-weight: 700; }
+.afc-type { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.afc-right { text-align: right; flex-shrink: 0; }
+.afc-balance { font-size: 18px; font-weight: 700; }
+.afc-balance.positive { color: var(--text); }
+.afc-balance.negative { color: var(--expense); }
+.afc-initial { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.icon-btn {
+  width: 28px; height: 28px; background: transparent; border: none;
+  font-size: 14px; cursor: pointer; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.icon-btn:active { background: var(--bg2); }
+.icon-btn.danger:active { background: var(--expense-bg); color: var(--expense); }
 
-  /* CATEGORY */
-  .cat-list { display: flex; flex-direction: column; gap: 11px; }
-  .cat-item { display: flex; align-items: center; gap: 8px; }
-  .cat-emoji { font-size: 14px; width: 20px; text-align: center; flex-shrink: 0; }
-  .cat-name { font-size: 12px; color: var(--text-dim); width: 58px; flex-shrink: 0; }
-  .cat-bar-bg { flex: 1; height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
-  .cat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
-  .cat-amt { font-size: 11px; font-weight: 600; color: var(--text); min-width: 52px; text-align: right; flex-shrink: 0; }
-  .cat-pct { font-size: 10px; color: var(--text-muted); min-width: 32px; text-align: right; flex-shrink: 0; }
+/* ── RECURRING ── */
+.rec-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 13px 14px; margin-bottom: 8px;
+  box-shadow: var(--shadow);
+}
+.rec-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--blue-bg); }
+.rec-info { flex: 1; min-width: 0; }
+.rec-name   { font-size: 14px; font-weight: 600; }
+.rec-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.rec-right  { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.rec-amount { font-size: 15px; font-weight: 700; color: var(--expense); }
+.rec-amount.transfer { color: var(--purple); }
 
-  /* STACKED BAR CHART */
-  .stacked-bar-wrap { margin-bottom: 14px; }
-  .stacked-bar {
-    display: flex; height: 22px; border-radius: 8px; overflow: hidden; margin-bottom: 10px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  .stacked-seg { height: 100%; transition: width 0.5s ease; }
-  .stacked-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; }
-  .stacked-leg-item { display: flex; align-items: center; gap: 5px; }
-  .stacked-leg-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .stacked-leg-name { font-size: 11px; color: var(--text-dim); }
-  .stacked-leg-pct { font-size: 11px; font-weight: 700; color: var(--text); }
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.empty-icon { font-size: 34px; margin-bottom: 10px; }
+.empty-text { font-size: 13px; }
 
-  /* QUICK STATS */
-  .quick-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-  .qs-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 14px 12px; box-shadow: var(--shadow); position: relative; overflow: hidden;
-  }
-  .qs-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; border-radius: 0 0 12px 12px; }
-  .qs-card.inc::after { background: var(--income); }
-  .qs-card.exp::after { background: var(--expense); }
-  .qs-card.bal::after { background: var(--accent); }
-  .qs-label { font-size: 10px; color: var(--text-muted); margin-bottom: 5px; }
-  .qs-value { font-size: 13px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2; }
-  .qs-value.income { color: var(--income); }
-  .qs-value.expense { color: var(--expense); }
-  .qs-value.bal { color: var(--accent); }
-  .qs-value.negative { color: var(--expense); }
-  .qs-sub { font-size: 10px; color: var(--text-muted); margin-top: 3px; }
+/* ── SECTION ADD BTN ── */
+.section-add-btn {
+  width: 100%; padding: 11px;
+  background: var(--bg2); border: 1.5px dashed var(--border2);
+  border-radius: 12px; color: var(--text-dim); font-size: 13px; font-weight: 600;
+  cursor: pointer; margin-top: 4px; font-family: inherit; transition: background 0.15s;
+}
+.section-add-btn:active { background: var(--border); color: var(--text); }
 
-  /* TRANSACTION */
-  .tx-section { margin-bottom: 14px; }
-  .tx-date-label {
-    font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px;
-    padding: 6px 4px; margin-bottom: 6px; border-bottom: 1px solid var(--border); font-weight: 500;
-  }
-  .tx-item {
-    display: flex; align-items: center; padding: 12px 14px;
-    background: var(--surface); border-radius: 12px; margin-bottom: 8px;
-    gap: 12px; border: 1px solid var(--border); box-shadow: var(--shadow);
-  }
-  .tx-item:active { box-shadow: none; }
-  .tx-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  .tx-icon.income-icon { background: var(--income-bg); }
-  .tx-icon.expense-icon { background: var(--expense-bg); }
-  .tx-icon.transfer-icon { background: var(--purple-bg); }
-  .tx-icon.recurring-icon { background: var(--blue-bg); }
-  .tx-info { flex: 1; min-width: 0; }
-  .tx-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tx-meta { display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap; }
-  .tx-cat { font-size: 11px; color: var(--text-muted); }
-  .tx-acc-badge {
-    font-size: 9px; padding: 2px 6px; border-radius: 20px; font-weight: 600;
-    background: var(--bg2); color: var(--text-dim);
-  }
-  .tx-recurring-badge { font-size: 9px; padding: 2px 6px; background: var(--blue-bg); color: var(--blue); border-radius: 20px; font-weight: 700; }
-  .tx-transfer-badge { font-size: 9px; padding: 2px 6px; background: var(--purple-bg); color: var(--purple); border-radius: 20px; font-weight: 700; }
-  .tx-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
-  .tx-amount { font-size: 15px; font-weight: 700; }
-  .tx-amount.income { color: var(--income); }
-  .tx-amount.expense { color: var(--expense); }
-  .tx-amount.transfer { color: var(--purple); }
-  .tx-delete { width: 24px; height: 24px; background: transparent; border: none; color: var(--text-muted); font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; }
-  .tx-delete:active { background: var(--expense-bg); color: var(--expense); }
+/* ── BOTTOM SHEET ── */
+.sheet-bg {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.sheet-bg.open { opacity: 1; pointer-events: all; }
+.sheet {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: var(--surface); border-radius: 24px 24px 0 0;
+  padding: 0 0 calc(20px + var(--safe-bottom));
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 92dvh; max-height: 92vh; overflow-y: auto;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
+}
+.sheet-bg.open .sheet { transform: translateY(0); }
+.sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 8px; }
+.sheet-title { font-size: 17px; font-weight: 700; padding: 8px 20px 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.sheet-body  { padding: 0 20px; }
 
-  .empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-  .empty-icon { font-size: 36px; margin-bottom: 10px; }
-  .empty-text { font-size: 13px; }
+/* ── FORM ── */
+.form-group { margin-bottom: 14px; }
+.form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-label { font-size: 12px; color: var(--text-dim); font-weight: 600; margin-bottom: 6px; display: block; }
+.form-input, .form-select {
+  width: 100%; padding: 13px 14px;
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px;
+  color: var(--text); font-size: 15px; font-family: inherit;
+  outline: none; -webkit-appearance: none; transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus { border-color: var(--accent); background: var(--surface); }
 
-  /* ACCOUNTS PAGE */
-  .account-full-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow);
-    display: flex; align-items: center; gap: 14px;
-  }
-  .afc-icon {
-    width: 48px; height: 48px; border-radius: 14px;
-    display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
-  }
-  .afc-icon.type-checking { background: var(--blue-bg); }
-  .afc-icon.type-savings { background: var(--income-bg); }
-  .afc-icon.type-card { background: var(--expense-bg); }
-  .afc-icon.type-investment { background: var(--purple-bg); }
-  .afc-icon.type-cash { background: var(--accent-bg); }
+.type-toggle {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 4px; margin-bottom: 18px;
+}
+.type-toggle.two { grid-template-columns: 1fr 1fr; }
+.type-btn {
+  padding: 10px; border: none; border-radius: 9px; background: transparent;
+  color: var(--text-dim); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.type-btn.active.expense  { background: var(--expense-bg); color: var(--expense); }
+.type-btn.active.income   { background: var(--income-bg);  color: var(--income); }
+.type-btn.active.transfer { background: var(--purple-bg);  color: var(--purple); }
 
-  .afc-info { flex: 1; min-width: 0; }
-  .afc-name { font-size: 15px; font-weight: 700; color: var(--text); }
-  .afc-type { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .afc-right { text-align: right; flex-shrink: 0; }
-  .afc-balance { font-size: 18px; font-weight: 700; }
-  .afc-balance.positive { color: var(--text); }
-  .afc-balance.negative { color: var(--expense); }
-  .afc-initial { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+.btn-save {
+  width: 100%; padding: 15px;
+  background: var(--accent); border: none; border-radius: 14px;
+  color: #fff; font-size: 15px; font-weight: 700; font-family: inherit;
+  cursor: pointer; margin-top: 6px;
+  box-shadow: 0 4px 14px rgba(232,118,10,0.3); transition: background 0.2s, transform 0.15s;
+}
+.btn-save:active { transform: scale(0.98); background: var(--accent-dk); }
 
-  .afc-edit { width: 28px; height: 28px; background: transparent; border: none; font-size: 14px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .afc-edit:active { background: var(--accent-bg); }
-  .afc-delete { width: 28px; height: 28px; background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .afc-delete:active { background: var(--expense-bg); color: var(--expense); }
+/* ── ACCOUNT TYPE GRID ── */
+.type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+.type-grid-btn {
+  padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 10px;
+  background: var(--bg); color: var(--text-dim); font-size: 11px; font-weight: 600;
+  cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit;
+}
+.type-grid-btn .tg-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+.type-grid-btn.selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
 
-  /* RECURRING */
-  .recurring-item {
-    display: flex; align-items: center; padding: 13px 14px;
-    background: var(--surface); border-radius: 12px; margin-bottom: 8px;
-    gap: 12px; border: 1px solid var(--border); box-shadow: var(--shadow);
-  }
-  .rec-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--blue-bg); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  .rec-info { flex: 1; min-width: 0; }
-  .rec-name { font-size: 14px; font-weight: 600; color: var(--text); }
-  .rec-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .rec-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
-  .rec-amount { font-size: 15px; font-weight: 700; color: var(--expense); }
-  .rec-delete { width: 24px; height: 24px; background: transparent; border: none; color: var(--text-muted); font-size: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 6px; }
-  .rec-delete:active { background: var(--expense-bg); color: var(--expense); }
+/* ── BUDGET CAT INPUTS ── */
+.budget-cat-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.budget-cat-item { display: flex; align-items: center; gap: 10px; }
+.bci-label { font-size: 12px; color: var(--text-dim); width: 68px; flex-shrink: 0; font-weight: 500; }
+.bci-input {
+  flex: 1; padding: 9px 12px;
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 13px; font-family: inherit;
+  outline: none; -webkit-appearance: none; transition: border-color 0.2s;
+}
+.bci-input:focus { border-color: var(--accent); background: var(--surface); }
 
-  /* SAVING BANNER */
-  .saving-banner {
-    background: linear-gradient(135deg, var(--accent-bg), #FFF8EE);
-    border: 1.5px solid #F5C07A; border-radius: var(--radius);
-    padding: 16px 18px; margin-bottom: 14px;
-    display: flex; align-items: center; justify-content: space-between;
-    box-shadow: var(--shadow);
-  }
-  .sb-label { font-size: 13px; color: var(--text-dim); font-weight: 700; }
-  .sb-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .sb-value { font-size: 30px; font-weight: 700; color: var(--accent); }
+/* ── CUSTOM CONFIRM ── */
+.confirm-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: 100; display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.confirm-bg.open { opacity: 1; pointer-events: all; }
+.confirm-box {
+  background: var(--surface); border-radius: 18px; padding: 24px 20px 16px;
+  width: 280px; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  transform: scale(0.95); transition: transform 0.2s;
+}
+.confirm-bg.open .confirm-box { transform: scale(1); }
+.confirm-title { font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+.confirm-desc  { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 20px; }
+.confirm-btns  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.confirm-cancel{ padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-dim); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.confirm-ok    { padding: 12px; background: var(--expense); border: none; border-radius: 12px; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.confirm-cancel:active { background: var(--border); }
+.confirm-ok:active { opacity: 0.85; }
 
-  /* ALERT */
-  .alert-banner {
-    background: var(--expense-bg); border: 1.5px solid #F5A9A3; border-radius: 12px;
-    padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
-  }
-  .alert-icon { font-size: 20px; }
-  .alert-text { font-size: 13px; color: var(--expense); font-weight: 700; }
-  .alert-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-
-  /* BOTTOM NAV */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 100%; max-width: 430px;
-    background: rgba(255,255,255,0.96);
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border);
-    padding: 8px 0 calc(8px + var(--safe-bottom));
-    display: flex; z-index: 30;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-  }
-  .nav-item {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
-    padding: 6px 0; background: transparent; border: none; cursor: pointer; transition: transform 0.15s;
-  }
-  .nav-item:active { transform: scale(0.9); }
-  .nav-item-icon { font-size: 20px; line-height: 1; transition: transform 0.2s; }
-  .nav-item-label { font-size: 10px; color: var(--text-muted); font-weight: 500; transition: color 0.2s; }
-  .nav-item.active .nav-item-icon { transform: scale(1.15); }
-  .nav-item.active .nav-item-label { color: var(--accent); font-weight: 700; }
-
-  /* SHEET */
-  .sheet-bg {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
-    z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-  }
-  .sheet-bg.open { opacity: 1; pointer-events: all; }
-  .sheet {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    background: var(--surface); border-radius: 24px 24px 0 0;
-    padding: 0 0 calc(20px + var(--safe-bottom));
-    transform: translateY(100%);
-    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-    max-height: 92dvh; max-height: 92vh; overflow-y: auto;
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
-  }
-  .sheet-bg.open .sheet { transform: translateY(0); }
-  .sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 12px auto 8px; }
-  .sheet-title { font-size: 17px; font-weight: 700; padding: 8px 20px 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; color: var(--text); }
-  .sheet-body { padding: 0 20px; }
-
-  .type-toggle {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
-    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
-    padding: 4px; margin-bottom: 18px;
-  }
-  .type-btn {
-    padding: 10px; border: none; border-radius: 9px; background: transparent;
-    color: var(--text-dim); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;
-  }
-  .type-btn.active.expense { background: var(--expense-bg); color: var(--expense); }
-  .type-btn.active.income { background: var(--income-bg); color: var(--income); }
-  .type-btn.active.transfer { background: var(--purple-bg); color: var(--purple); }
-
-  .form-group { margin-bottom: 14px; }
-  .form-label { font-size: 12px; color: var(--text-dim); margin-bottom: 6px; display: block; font-weight: 600; }
-  .form-input, .form-select {
-    width: 100%; padding: 13px 14px;
-    background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px;
-    color: var(--text); font-size: 15px; outline: none; -webkit-appearance: none;
-    transition: border-color 0.2s; font-family: inherit;
-  }
-  .form-input:focus, .form-select:focus { border-color: var(--accent); background: var(--surface); }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  .btn-save {
-    width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 14px;
-    color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 6px;
-    box-shadow: 0 4px 14px rgba(232,118,10,0.3); transition: background 0.2s, transform 0.15s; font-family: inherit;
-  }
-  .btn-save:active { transform: scale(0.98); background: var(--accent-dark); }
-
-  .budget-cat-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-  .budget-cat-item { display: flex; align-items: center; gap: 10px; }
-  .bci-label { font-size: 12px; color: var(--text-dim); width: 68px; flex-shrink: 0; font-weight: 500; }
-  .bci-input {
-    flex: 1; padding: 9px 12px; background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 10px; color: var(--text); font-size: 13px; outline: none; -webkit-appearance: none;
-    transition: border-color 0.2s; font-family: inherit;
-  }
-  .bci-input:focus { border-color: var(--accent); background: var(--surface); }
-
-  .section-add-btn {
-    width: 100%; padding: 11px; background: var(--bg2); border: 1.5px dashed var(--border2);
-    border-radius: 12px; color: var(--text-dim); font-size: 13px; font-weight: 600;
-    cursor: pointer; margin-top: 4px; transition: background 0.15s; font-family: inherit;
-  }
-  .section-add-btn:active { background: var(--border); color: var(--text); }
-
-  /* ACCOUNT TYPE SELECTOR */
-  .type-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 18px; }
-  .type-grid-btn {
-    padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 10px;
-    background: var(--bg); color: var(--text-dim); font-size: 11px; font-weight: 600;
-    cursor: pointer; text-align: center; transition: all 0.15s; font-family: inherit;
-  }
-  .type-grid-btn .tg-icon { font-size: 20px; display: block; margin-bottom: 4px; }
-  .type-grid-btn.selected { border-color: var(--accent); background: var(--accent-bg); color: var(--accent); }
-
-  ::-webkit-scrollbar { width: 0; }
-
-  @keyframes slideUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .anim { animation: slideUp 0.28s ease both; }
+::-webkit-scrollbar { width: 0; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.anim { animation: slideUp 0.28s ease both; }
 </style>
 </head>
 <body>
@@ -512,18 +502,12 @@
     <div class="month-row">
       <div class="month-nav">
         <button class="month-arrow" onclick="changeMonth(-1)">◀</button>
-        <div class="month-label" id="month-label">2026. 03</div>
+        <div class="month-label" id="month-label"></div>
         <button class="month-arrow" onclick="changeMonth(1)">▶</button>
       </div>
       <div class="month-summary">
-        <div class="ms-item">
-          <div class="ms-label">수입</div>
-          <div class="ms-value income" id="hdr-income">₩0</div>
-        </div>
-        <div class="ms-item">
-          <div class="ms-label">지출</div>
-          <div class="ms-value expense" id="hdr-expense">₩0</div>
-        </div>
+        <div class="ms-item"><div class="ms-label">수입</div><div class="ms-value income" id="hdr-income">₩0</div></div>
+        <div class="ms-item"><div class="ms-label">지출</div><div class="ms-value expense" id="hdr-expense">₩0</div></div>
       </div>
     </div>
   </div>
@@ -531,43 +515,31 @@
   <!-- BODY -->
   <div class="body-scroll" id="body-scroll">
 
-    <!-- DASHBOARD -->
+    <!-- HOME -->
     <div class="view active" id="view-dashboard">
       <div class="balance-hero anim">
         <div class="bh-label">전체 순자산</div>
         <div class="bh-amount" id="hero-balance">₩0</div>
         <div class="bh-row">
-          <div class="bh-item">
-            <div class="bh-item-label">이번 달 수입</div>
-            <div class="bh-item-value" id="hero-income">₩0</div>
-          </div>
-          <div class="bh-item">
-            <div class="bh-item-label">이번 달 지출</div>
-            <div class="bh-item-value" id="hero-expense">₩0</div>
-          </div>
+          <div class="bh-item"><div class="bh-item-label">이번 달 수입</div><div class="bh-item-value" id="hero-income">₩0</div></div>
+          <div class="bh-item"><div class="bh-item-label">이번 달 지출</div><div class="bh-item-value" id="hero-expense">₩0</div></div>
         </div>
       </div>
-
-      <!-- ACCOUNT CARDS -->
       <div class="accounts-scroll" id="dashboard-accounts"></div>
-
       <div id="alert-area"></div>
       <div id="budget-status-area"></div>
-
       <div class="card anim" style="animation-delay:0.06s;">
-        <div class="card-title">
-          6개월 추이
+        <div class="card-title">6개월 추이
           <div class="chart-legend">
             <div class="leg"><div class="leg-dot" style="background:var(--income)"></div>수입</div>
             <div class="leg"><div class="leg-dot" style="background:var(--expense)"></div>지출</div>
           </div>
         </div>
-        <div class="chart-bars" id="chart-main"></div>
+        <div class="chart-bars" id="chart-main" style="height:100px;"></div>
       </div>
-
       <div class="card anim" style="animation-delay:0.12s;">
         <div class="card-title">지출 카테고리</div>
-        <div class="cat-list" id="cat-exp-dash"></div>
+        <div id="cat-exp-dash"></div>
       </div>
     </div>
 
@@ -579,10 +551,7 @@
     <!-- ACCOUNTS -->
     <div class="view" id="view-accounts">
       <div class="card anim">
-        <div class="card-title">
-          계좌 목록
-          <div class="card-title-badge" id="total-asset-badge">총 ₩0</div>
-        </div>
+        <div class="card-title">계좌 목록 <div class="badge" id="total-asset-badge">총 ₩0</div></div>
         <div id="accounts-list"></div>
         <button class="section-add-btn" onclick="openAccountSheet()">+ 계좌 추가</button>
       </div>
@@ -591,22 +560,16 @@
     <!-- RECURRING -->
     <div class="view" id="view-recurring">
       <div class="card anim">
-        <div class="card-title">
-          반복 지출 목록
-          <div class="card-title-badge" id="rec-total-badge">합계: ₩0</div>
-        </div>
+        <div class="card-title">반복 지출 <div class="badge" id="rec-total-badge">합계: ₩0</div></div>
         <div id="recurring-list"></div>
         <button class="section-add-btn" onclick="openRecurringSheet()">+ 반복 지출 추가</button>
       </div>
-      <div class="card anim" style="animation-delay:0.08s;">
-        <div class="card-title">
-          반복 이체 목록
-          <div class="card-title-badge" id="rec-transfer-total-badge">합계: ₩0</div>
-        </div>
+      <div class="card anim" style="animation-delay:0.06s;">
+        <div class="card-title">반복 이체 <div class="badge" id="rec-tr-total-badge">합계: ₩0</div></div>
         <div id="recurring-transfer-list"></div>
         <button class="section-add-btn" onclick="openRecTransferSheet()">+ 반복 이체 추가</button>
       </div>
-      <div class="card anim" style="animation-delay:0.16s;">
+      <div class="card anim" style="animation-delay:0.12s;">
         <div class="card-title">이번 달 현황</div>
         <div id="recurring-month-status"></div>
       </div>
@@ -615,10 +578,7 @@
     <!-- STATS -->
     <div class="view" id="view-stats">
       <div class="saving-banner anim">
-        <div>
-          <div class="sb-label">이번 달 저축률</div>
-          <div class="sb-desc" id="stats-saving-desc">-</div>
-        </div>
+        <div><div class="sb-label">이번 달 저축률</div><div class="sb-desc" id="stats-saving-desc">-</div></div>
         <div class="sb-value" id="stats-rate">0%</div>
       </div>
       <div class="quick-stats anim" style="animation-delay:0.06s;">
@@ -635,11 +595,10 @@
         </div>
         <div class="chart-bars" id="chart-stats" style="height:120px;"></div>
       </div>
-      <div class="card anim" style="animation-delay:0.18s;"><div class="card-title">지출 카테고리</div><div class="cat-list" id="cat-exp-stats"></div></div>
-      <div class="card anim" style="animation-delay:0.22s;"><div class="card-title">수입 카테고리</div><div class="cat-list" id="cat-inc-stats"></div></div>
+      <div class="card anim" style="animation-delay:0.18s;"><div class="card-title">지출 카테고리</div><div id="cat-exp-stats"></div></div>
+      <div class="card anim" style="animation-delay:0.22s;"><div class="card-title">수입 카테고리</div><div id="cat-inc-stats"></div></div>
       <div class="card anim" style="animation-delay:0.26s;">
-        <div class="card-title">
-          예산 설정
+        <div class="card-title">예산 설정
           <button onclick="openBudgetSheet()" style="font-size:11px;padding:5px 12px;background:var(--accent-bg);border:1.5px solid var(--accent);border-radius:8px;color:var(--accent);font-weight:700;cursor:pointer;font-family:inherit;">수정</button>
         </div>
         <div id="budget-settings-display"></div>
@@ -650,68 +609,40 @@
 
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
-    <button class="nav-item active" id="nav-dashboard" onclick="showView('dashboard')">
-      <div class="nav-item-icon">🏠</div><div class="nav-item-label">홈</div>
-    </button>
-    <button class="nav-item" id="nav-transactions" onclick="showView('transactions')">
-      <div class="nav-item-icon">📋</div><div class="nav-item-label">내역</div>
-    </button>
-    <button class="nav-item" id="nav-accounts" onclick="showView('accounts')">
-      <div class="nav-item-icon">🏦</div><div class="nav-item-label">계좌</div>
-    </button>
-    <button class="nav-item" id="nav-recurring" onclick="showView('recurring')">
-      <div class="nav-item-icon">🔄</div><div class="nav-item-label">반복</div>
-    </button>
-    <button class="nav-item" id="nav-stats" onclick="showView('stats')">
-      <div class="nav-item-icon">📊</div><div class="nav-item-label">통계</div>
-    </button>
+    <button class="nav-item active" id="nav-dashboard"    onclick="showView('dashboard')">   <div class="nav-item-icon">🏠</div><div class="nav-item-label">홈</div></button>
+    <button class="nav-item"        id="nav-transactions" onclick="showView('transactions')"><div class="nav-item-icon">📋</div><div class="nav-item-label">내역</div></button>
+    <button class="nav-item"        id="nav-accounts"     onclick="showView('accounts')">    <div class="nav-item-icon">🏦</div><div class="nav-item-label">계좌</div></button>
+    <button class="nav-item"        id="nav-recurring"    onclick="showView('recurring')">   <div class="nav-item-icon">🔄</div><div class="nav-item-label">반복</div></button>
+    <button class="nav-item"        id="nav-stats"        onclick="showView('stats')">       <div class="nav-item-icon">📊</div><div class="nav-item-label">통계</div></button>
   </nav>
 </div>
 
-<!-- ADD TRANSACTION SHEET -->
-<div class="sheet-bg" id="sheet-bg" onclick="closeSheetBg(event)">
+<!-- TRANSACTION SHEET -->
+<div class="sheet-bg" id="sheet-bg" onclick="if(event.target===this)closeSheet()">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="tx-sheet-title">새 내역 추가</div>
     <div class="sheet-body">
       <div class="type-toggle">
-        <button class="type-btn active expense" id="btn-expense" onclick="setType('expense')">지출</button>
-        <button class="type-btn income" id="btn-income" onclick="setType('income')">수입</button>
-        <button class="type-btn transfer" id="btn-transfer" onclick="setType('transfer')">이체</button>
+        <button class="type-btn active expense" id="btn-expense"  onclick="setType('expense')">지출</button>
+        <button class="type-btn income"         id="btn-income"   onclick="setType('income')">수입</button>
+        <button class="type-btn transfer"       id="btn-transfer" onclick="setType('transfer')">이체</button>
       </div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">날짜</label>
-          <input type="date" class="form-input" id="input-date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">금액 (원)</label>
-          <input type="number" inputmode="numeric" class="form-input" id="input-amount" placeholder="0">
-        </div>
+        <div class="form-group"><label class="form-label">날짜</label><input type="date" class="form-input" id="input-date"></div>
+        <div class="form-group"><label class="form-label">금액 (원)</label><input type="number" inputmode="numeric" class="form-input" id="input-amount" placeholder="0"></div>
       </div>
-      <div class="form-group" id="desc-group">
-        <label class="form-label">내용</label>
-        <input type="text" class="form-input" id="input-desc" placeholder="예: 마트, 월급, 카페...">
-      </div>
-      <div class="form-group" id="cat-group">
-        <label class="form-label">카테고리</label>
-        <select class="form-select" id="input-cat"></select>
-      </div>
-      <div class="form-group" id="acc-from-group">
-        <label class="form-label" id="acc-from-label">계좌</label>
-        <select class="form-select" id="input-acc-from"></select>
-      </div>
-      <div class="form-group" id="acc-to-group" style="display:none;">
-        <label class="form-label">받는 계좌</label>
-        <select class="form-select" id="input-acc-to"></select>
-      </div>
+      <div class="form-group"><label class="form-label">내용</label><input type="text" class="form-input" id="input-desc" placeholder="예: 마트, 월급, 카페..."></div>
+      <div class="form-group" id="cat-group"><label class="form-label">카테고리</label><select class="form-select" id="input-cat"></select></div>
+      <div class="form-group"><label class="form-label" id="acc-from-label">계좌</label><select class="form-select" id="input-acc-from"></select></div>
+      <div class="form-group" id="acc-to-group" style="display:none;"><label class="form-label">받는 계좌</label><select class="form-select" id="input-acc-to"></select></div>
       <button class="btn-save" id="tx-save-btn" onclick="saveTransaction()">저장하기</button>
     </div>
   </div>
 </div>
 
-<!-- ADD ACCOUNT SHEET -->
-<div class="sheet-bg" id="acc-sheet-bg" onclick="closeAccSheetBg(event)">
+<!-- ACCOUNT SHEET -->
+<div class="sheet-bg" id="acc-sheet-bg" onclick="if(event.target===this)closeAccSheet()">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="acc-sheet-title">계좌 추가</div>
@@ -719,110 +650,71 @@
       <div class="form-group">
         <label class="form-label">계좌 종류</label>
         <div class="type-grid" id="acc-type-grid">
-          <button class="type-grid-btn selected" data-type="checking" onclick="selectAccType(this)"><span class="tg-icon">🏦</span>입출금</button>
-          <button class="type-grid-btn" data-type="savings" onclick="selectAccType(this)"><span class="tg-icon">🐷</span>적금/저축</button>
-          <button class="type-grid-btn" data-type="card" onclick="selectAccType(this)"><span class="tg-icon">💳</span>카드</button>
-          <button class="type-grid-btn" data-type="investment" onclick="selectAccType(this)"><span class="tg-icon">📈</span>투자</button>
-          <button class="type-grid-btn" data-type="cash" onclick="selectAccType(this)"><span class="tg-icon">💵</span>현금</button>
+          <button class="type-grid-btn selected" data-type="checking"   onclick="selectAccType(this)"><span class="tg-icon">🏦</span>입출금</button>
+          <button class="type-grid-btn"          data-type="savings"    onclick="selectAccType(this)"><span class="tg-icon">🐷</span>적금/저축</button>
+          <button class="type-grid-btn"          data-type="card"       onclick="selectAccType(this)"><span class="tg-icon">💳</span>카드</button>
+          <button class="type-grid-btn"          data-type="investment" onclick="selectAccType(this)"><span class="tg-icon">📈</span>투자</button>
+          <button class="type-grid-btn"          data-type="cash"       onclick="selectAccType(this)"><span class="tg-icon">💵</span>현금</button>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">계좌 이름</label>
-        <input type="text" class="form-input" id="acc-name" placeholder="예: 신한 입출금, 국민카드...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">초기 잔액 (원)</label>
-        <input type="text" inputmode="text" class="form-input" id="acc-initial" placeholder="예: -300000 또는 1500000">
-      </div>
+      <div class="form-group"><label class="form-label">계좌 이름</label><input type="text" class="form-input" id="acc-name" placeholder="예: 신한 입출금, 현대카드..."></div>
+      <div class="form-group"><label class="form-label">초기 잔액 (원)</label><input type="text" inputmode="text" class="form-input" id="acc-initial" placeholder="예: -300000 또는 1500000"></div>
       <button class="btn-save" id="acc-save-btn" onclick="saveAccount()">추가하기</button>
     </div>
   </div>
 </div>
 
-<!-- RECURRING SHEET -->
-<div class="sheet-bg" id="rec-sheet-bg" onclick="closeRecSheetBg(event)">
+<!-- RECURRING EXPENSE SHEET -->
+<div class="sheet-bg" id="rec-sheet-bg" onclick="if(event.target===this)closeRecSheet()">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">반복 지출 추가</div>
     <div class="sheet-body">
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">매월 결제일</label>
-          <input type="number" inputmode="numeric" class="form-input" id="rec-day" placeholder="15" min="1" max="31">
-        </div>
-        <div class="form-group">
-          <label class="form-label">금액 (원)</label>
-          <input type="number" inputmode="numeric" class="form-input" id="rec-amount" placeholder="0">
-        </div>
+        <div class="form-group"><label class="form-label">매월 결제일</label><input type="number" inputmode="numeric" class="form-input" id="rec-day" placeholder="15" min="1" max="31"></div>
+        <div class="form-group"><label class="form-label">금액 (원)</label><input type="number" inputmode="numeric" class="form-input" id="rec-amount" placeholder="0"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">이름</label>
-        <input type="text" class="form-input" id="rec-name" placeholder="예: 월세, 넷플릭스, 헬스장...">
-      </div>
+      <div class="form-group"><label class="form-label">이름</label><input type="text" class="form-input" id="rec-name" placeholder="예: 월세, 넷플릭스, 헬스장..."></div>
       <div class="form-group">
         <label class="form-label">카테고리</label>
         <select class="form-select" id="rec-cat">
-          <option value="주거">🏠 주거</option>
-          <option value="통신">📱 통신</option>
-          <option value="문화/여가">🎬 문화/여가</option>
-          <option value="교육">📚 교육</option>
-          <option value="교통">🚇 교통</option>
-          <option value="저축">🐷 저축</option>
-          <option value="기타지출">📌 기타지출</option>
+          <option value="주거">🏠 주거</option><option value="통신">📱 통신</option>
+          <option value="문화/여가">🎬 문화/여가</option><option value="교육">📚 교육</option>
+          <option value="교통">🚇 교통</option><option value="육아">🍼 육아</option>
+          <option value="저축">🐷 저축</option><option value="기타지출">📌 기타지출</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">출금 계좌</label>
-        <select class="form-select" id="rec-acc"></select>
-      </div>
+      <div class="form-group"><label class="form-label">출금 계좌</label><select class="form-select" id="rec-acc"></select></div>
       <button class="btn-save" onclick="saveRecurring()">추가하기</button>
     </div>
   </div>
 </div>
 
 <!-- RECURRING TRANSFER SHEET -->
-<div class="sheet-bg" id="rec-transfer-sheet-bg" onclick="closeRecTransferSheetBg(event)">
+<div class="sheet-bg" id="rec-tr-sheet-bg" onclick="if(event.target===this)closeRecTransferSheet()">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">반복 이체 추가</div>
     <div class="sheet-body">
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">매월 이체일</label>
-          <input type="number" inputmode="numeric" class="form-input" id="rec-tr-day" placeholder="25" min="1" max="31">
-        </div>
-        <div class="form-group">
-          <label class="form-label">금액 (원)</label>
-          <input type="number" inputmode="numeric" class="form-input" id="rec-tr-amount" placeholder="0">
-        </div>
+        <div class="form-group"><label class="form-label">매월 이체일</label><input type="number" inputmode="numeric" class="form-input" id="rec-tr-day" placeholder="25" min="1" max="31"></div>
+        <div class="form-group"><label class="form-label">금액 (원)</label><input type="number" inputmode="numeric" class="form-input" id="rec-tr-amount" placeholder="0"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">이름</label>
-        <input type="text" class="form-input" id="rec-tr-name" placeholder="예: 청약저축, 주식 투자...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">출금 계좌</label>
-        <select class="form-select" id="rec-tr-from"></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">입금 계좌</label>
-        <select class="form-select" id="rec-tr-to"></select>
-      </div>
+      <div class="form-group"><label class="form-label">이름</label><input type="text" class="form-input" id="rec-tr-name" placeholder="예: 청약저축, 주식 투자..."></div>
+      <div class="form-group"><label class="form-label">출금 계좌</label><select class="form-select" id="rec-tr-from"></select></div>
+      <div class="form-group"><label class="form-label">입금 계좌</label><select class="form-select" id="rec-tr-to"></select></div>
       <button class="btn-save" onclick="saveRecTransfer()">추가하기</button>
     </div>
   </div>
 </div>
 
 <!-- BUDGET SHEET -->
-<div class="sheet-bg" id="budget-sheet-bg" onclick="closeBudgetSheetBg(event)">
+<div class="sheet-bg" id="budget-sheet-bg" onclick="if(event.target===this)closeBudgetSheet()">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">월 예산 설정</div>
     <div class="sheet-body">
-      <div class="form-group">
-        <label class="form-label">전체 월 예산 (원)</label>
-        <input type="number" inputmode="numeric" class="form-input" id="budget-total" placeholder="예: 2000000">
-      </div>
+      <div class="form-group"><label class="form-label">전체 월 예산 (원)</label><input type="number" inputmode="numeric" class="form-input" id="budget-total" placeholder="예: 2000000"></div>
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;font-weight:500;">카테고리별 예산 (선택사항)</div>
       <div class="budget-cat-list" id="budget-cat-inputs"></div>
       <button class="btn-save" onclick="saveBudget()">저장하기</button>
@@ -830,17 +722,23 @@
   </div>
 </div>
 
-<script>
-const nowDate = new Date();
-let currentYear = nowDate.getFullYear();
-let currentMonth = nowDate.getMonth();
-let currentView = 'dashboard';
-let modalType = 'expense';
-let selectedAccType = 'checking';
+<!-- CUSTOM CONFIRM -->
+<div class="confirm-bg" id="confirm-bg">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-desc"  id="confirm-desc"></div>
+    <div class="confirm-btns">
+      <button class="confirm-cancel" onclick="closeConfirm()">취소</button>
+      <button class="confirm-ok"     id="confirm-ok-btn">삭제</button>
+    </div>
+  </div>
+</div>
 
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────────────
 const CATEGORIES = {
   expense: ['식비','교통','주거','쇼핑','의료','문화/여가','교육','통신','육아','저축','기타지출'],
-  income: ['급여','부업','투자','용돈','환급','기타수입'],
+  income:  ['급여','부업','투자','용돈','환급','기타수입'],
   transfer: []
 };
 
@@ -852,26 +750,42 @@ const CAT_COLORS = {
 
 const CAT_EMOJI = {
   '식비':'🍚','교통':'🚇','주거':'🏠','쇼핑':'🛍','의료':'💊','문화/여가':'🎬','교육':'📚',
-  '통신':'📱','육아':'🍼','저축':'🐷','기타지출':'📌','급여':'💰','부업':'💼','투자':'📈','용돈':'🎁','환급':'💸','기타수입':'✨'
+  '통신':'📱','육아':'🍼','저축':'🐷','기타지출':'📌',
+  '급여':'💰','부업':'💼','투자':'📈','용돈':'🎁','환급':'💸','기타수입':'✨'
 };
 
 const ACC_TYPE_LABEL = { checking:'입출금', savings:'적금/저축', card:'카드', investment:'투자', cash:'현금' };
-const ACC_TYPE_ICON = { checking:'🏦', savings:'🐷', card:'💳', investment:'📈', cash:'💵' };
+const ACC_TYPE_ICON  = { checking:'🏦', savings:'🐷', card:'💳', investment:'📈', cash:'💵' };
 
-let transactions = JSON.parse(localStorage.getItem('hb_tx') || '[]');
-let recurringItems = JSON.parse(localStorage.getItem('hb_rec') || '[]');
-let recurringTransfers = JSON.parse(localStorage.getItem('hb_rec_tr') || '[]');
-let budget = JSON.parse(localStorage.getItem('hb_budget') || '{"total":0,"cats":{}}');
-let accounts = JSON.parse(localStorage.getItem('hb_accounts') || '[]');
+// ── STATE ──────────────────────────────────────────────────────────────
+const now = new Date();
+let currentYear  = now.getFullYear();
+let currentMonth = now.getMonth();
+let currentView  = 'dashboard';
+let modalType    = 'expense';
+let selectedAccType  = 'checking';
+let editingTxId      = null;
+let editingAccountId = null;
 
-function fmt(n) { return '₩' + Math.abs(n).toLocaleString('ko-KR'); }
+let transactions       = load('hb_tx',       []);
+let recurringItems     = load('hb_rec',      []);
+let recurringTransfers = load('hb_rec_tr',   []);
+let budget             = load('hb_budget',   { total: 0, cats: {} });
+let accounts           = load('hb_accounts', []);
+
+// ── STORAGE ────────────────────────────────────────────────────────────
+function load(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch { return def; } }
 function saveData() {
-  localStorage.setItem('hb_tx', JSON.stringify(transactions));
-  localStorage.setItem('hb_rec', JSON.stringify(recurringItems));
-  localStorage.setItem('hb_rec_tr', JSON.stringify(recurringTransfers));
-  localStorage.setItem('hb_budget', JSON.stringify(budget));
+  localStorage.setItem('hb_tx',       JSON.stringify(transactions));
+  localStorage.setItem('hb_rec',      JSON.stringify(recurringItems));
+  localStorage.setItem('hb_rec_tr',   JSON.stringify(recurringTransfers));
+  localStorage.setItem('hb_budget',   JSON.stringify(budget));
   localStorage.setItem('hb_accounts', JSON.stringify(accounts));
 }
+
+// ── HELPERS ────────────────────────────────────────────────────────────
+function fmt(n) { return '₩' + Math.abs(n).toLocaleString('ko-KR'); }
+function uid()  { return Date.now().toString(); }
 
 function getMonthTx(y, m) {
   return transactions.filter(t => {
@@ -879,31 +793,31 @@ function getMonthTx(y, m) {
     return d.getFullYear() === y && d.getMonth() === m;
   });
 }
+function sumInc(txs) { return txs.filter(t => t.type === 'income').reduce((a, b) => a + b.amount, 0); }
+function sumExp(txs) { return txs.filter(t => t.type === 'expense').reduce((a, b) => a + b.amount, 0); }
 
-function sumInc(txs) { return txs.filter(t=>t.type==='income').reduce((a,b)=>a+b.amount,0); }
-function sumExp(txs) { return txs.filter(t=>t.type==='expense').reduce((a,b)=>a+b.amount,0); }
-
-// 계좌 잔액 계산 (초기잔액 + 수입 - 지출 - 이체출금 + 이체입금)
-function getAccountBalance(accId) {
-  const acc = accounts.find(a=>a.id===accId);
+function getAccountBalance(id) {
+  const acc = accounts.find(a => a.id === id);
   if (!acc) return 0;
-  let bal = acc.initialAmount;
-  transactions.forEach(t => {
-    if (t.type === 'income' && t.accountId === accId) bal += t.amount;
-    if (t.type === 'expense' && t.accountId === accId) bal -= t.amount;
-    if (t.type === 'transfer') {
-      if (t.fromAccountId === accId) bal -= t.amount;
-      if (t.toAccountId === accId) bal += t.amount;
-    }
-  });
-  return bal;
+  return transactions.reduce((bal, t) => {
+    if (t.type === 'income'    && t.accountId     === id) return bal + t.amount;
+    if (t.type === 'expense'   && t.accountId     === id) return bal - t.amount;
+    if (t.type === 'transfer'  && t.fromAccountId === id) return bal - t.amount;
+    if (t.type === 'transfer'  && t.toAccountId   === id) return bal + t.amount;
+    return bal;
+  }, acc.initialAmount);
 }
 
-function getTotalAsset() {
-  return accounts.reduce((sum, acc) => sum + getAccountBalance(acc.id), 0);
+function getTotalAsset() { return accounts.reduce((s, a) => s + getAccountBalance(a.id), 0); }
+
+function buildAccountOptions(selectId, excludeId) {
+  const sel = document.getElementById(selectId);
+  sel.innerHTML = accounts.length
+    ? accounts.filter(a => a.id !== excludeId).map(a => `<option value="${a.id}">${ACC_TYPE_ICON[a.type]} ${a.name}</option>`).join('')
+    : '<option value="">계좌 없음 (계좌 탭에서 추가)</option>';
 }
 
-// VIEW
+// ── NAVIGATION ─────────────────────────────────────────────────────────
 function showView(v) {
   currentView = v;
   document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
@@ -916,195 +830,184 @@ function showView(v) {
 
 function changeMonth(d) {
   currentMonth += d;
-  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  document.getElementById('month-label').textContent =
-    currentYear + '. ' + String(currentMonth+1).padStart(2,'0');
+  if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+  if (currentMonth > 11) { currentMonth = 0;  currentYear++; }
+  document.getElementById('month-label').textContent = currentYear + '. ' + String(currentMonth + 1).padStart(2, '0');
   render();
 }
 
+// ── RENDER DISPATCH ────────────────────────────────────────────────────
 function render() {
   const txs = getMonthTx(currentYear, currentMonth);
   const inc = sumInc(txs), exp = sumExp(txs);
-  document.getElementById('hdr-income').textContent = fmt(inc);
+  document.getElementById('hdr-income').textContent  = fmt(inc);
   document.getElementById('hdr-expense').textContent = fmt(exp);
-  if (currentView === 'dashboard') renderDash(txs, inc, exp);
-  if (currentView === 'transactions') renderTx(txs);
-  if (currentView === 'accounts') renderAccounts();
-  if (currentView === 'recurring') renderRecurring();
-  if (currentView === 'stats') renderStats();
+  if (currentView === 'dashboard')    renderDash(txs, inc, exp);
+  if (currentView === 'transactions') renderTx();
+  if (currentView === 'accounts')     renderAccounts();
+  if (currentView === 'recurring')    renderRecurring();
+  if (currentView === 'stats')        renderStats();
 }
 
+// ── DASHBOARD ──────────────────────────────────────────────────────────
 function renderDash(txs, inc, exp) {
-  const totalAsset = getTotalAsset();
+  const total = getTotalAsset();
   const hb = document.getElementById('hero-balance');
-  hb.textContent = fmt(totalAsset);
-  hb.className = 'bh-amount' + (totalAsset < 0 ? ' negative' : '');
-  document.getElementById('hero-income').textContent = fmt(inc);
+  hb.textContent = fmt(total);
+  hb.className = 'bh-amount' + (total < 0 ? ' negative' : '');
+  document.getElementById('hero-income').textContent  = fmt(inc);
   document.getElementById('hero-expense').textContent = fmt(exp);
 
   // Account cards
   const accEl = document.getElementById('dashboard-accounts');
-  let html = accounts.map(acc => {
+  accEl.innerHTML = accounts.map(acc => {
     const bal = getAccountBalance(acc.id);
     return `<div class="account-card type-${acc.type}">
-      <div class="acc-icon">${ACC_TYPE_ICON[acc.type]||'🏦'}</div>
+      <div class="acc-icon">${ACC_TYPE_ICON[acc.type]}</div>
       <div class="acc-name">${acc.name}</div>
-      <div class="acc-type">${ACC_TYPE_LABEL[acc.type]||''}</div>
-      <div class="acc-balance ${bal>=0?'positive':'negative'}">${bal<0?'-':''}${fmt(bal)}</div>
+      <div class="acc-type">${ACC_TYPE_LABEL[acc.type]}</div>
+      <div class="acc-bal ${bal >= 0 ? 'positive' : 'negative'}">${bal < 0 ? '-' : ''}${fmt(bal)}</div>
     </div>`;
-  }).join('');
-  html += `<div class="add-account-card" onclick="showView('accounts')"><div class="add-account-plus">+</div>계좌 관리</div>`;
-  accEl.innerHTML = html;
+  }).join('') + `<div class="add-account-card" onclick="showView('accounts')"><div style="font-size:24px;color:var(--border2)">+</div>계좌 관리</div>`;
 
-  // Budget alert
-  const alertArea = document.getElementById('alert-area');
-  const budgetArea = document.getElementById('budget-status-area');
-
-  if (budget.total > 0) {
-    const pct = Math.round((exp / budget.total) * 100);
-    const remain = budget.total - exp;
-    const statusClass = pct < 80 ? 'ok' : pct < 100 ? 'warn' : 'over';
-    if (pct >= 100) {
-      alertArea.innerHTML = `<div class="alert-banner anim"><div class="alert-icon">🚨</div><div><div class="alert-text">예산 초과! ${fmt(Math.abs(remain))} 초과했어요</div><div class="alert-sub">이번 달 예산: ${fmt(budget.total)}</div></div></div>`;
-    } else if (pct >= 80) {
-      alertArea.innerHTML = `<div class="alert-banner anim" style="background:#FFF8E8;border-color:#F5C07A;"><div class="alert-icon">⚠️</div><div><div class="alert-text" style="color:var(--accent)">예산의 ${pct}% 사용했어요</div><div class="alert-sub">잔여 예산: ${fmt(remain)}</div></div></div>`;
-    } else { alertArea.innerHTML = ''; }
-
-    budgetArea.innerHTML = `<div class="budget-status-card anim">
-      <div class="bsc-header"><div class="bsc-title">이번 달 예산</div><div class="bsc-amounts">${fmt(exp)} / ${fmt(budget.total)}</div></div>
-      <div class="budget-bar-bg"><div class="budget-bar-fill ${statusClass}" style="width:${Math.min(pct,100)}%"></div></div>
-      <div class="bsc-footer"><div class="bsc-remain ${statusClass}">${remain>=0?'잔여 '+fmt(remain):'초과 '+fmt(Math.abs(remain))}</div><div class="bsc-percent">${pct}%</div></div>
-    </div>`;
-  } else {
-    alertArea.innerHTML = '';
-    budgetArea.innerHTML = `<div class="budget-status-card anim" style="padding:14px 18px;"><button class="no-budget-btn" onclick="openBudgetSheet()">💰 이번 달 예산 설정하기</button></div>`;
-  }
+  // Budget alert & bar
+  renderBudgetStatus(exp);
 
   renderBarChart('chart-main', 6, 78);
   renderCatList('cat-exp-dash', txs, 'expense');
 }
 
+function renderBudgetStatus(exp) {
+  const alertEl  = document.getElementById('alert-area');
+  const budgetEl = document.getElementById('budget-status-area');
+
+  if (!budget.total) {
+    alertEl.innerHTML = '';
+    budgetEl.innerHTML = `<div class="budget-card" style="padding:14px 18px;"><button class="no-budget-btn" onclick="openBudgetSheet()">💰 이번 달 예산 설정하기</button></div>`;
+    return;
+  }
+
+  const pct    = Math.round((exp / budget.total) * 100);
+  const remain = budget.total - exp;
+  const cls    = pct < 80 ? 'ok' : pct < 100 ? 'warn' : 'over';
+
+  alertEl.innerHTML = pct >= 100
+    ? `<div class="alert-banner danger anim"><div class="alert-icon">🚨</div><div><div class="alert-title danger">예산 초과! ${fmt(Math.abs(remain))} 초과했어요</div><div class="alert-sub">이번 달 예산: ${fmt(budget.total)}</div></div></div>`
+    : pct >= 80
+    ? `<div class="alert-banner warn anim"><div class="alert-icon">⚠️</div><div><div class="alert-title warn">예산의 ${pct}% 사용했어요</div><div class="alert-sub">잔여 예산: ${fmt(remain)}</div></div></div>`
+    : '';
+
+  budgetEl.innerHTML = `<div class="budget-card anim">
+    <div class="budget-card-header"><div class="budget-card-title">이번 달 예산</div><div class="budget-card-amounts">${fmt(exp)} / ${fmt(budget.total)}</div></div>
+    <div class="budget-bar-bg"><div class="budget-bar-fill ${cls}" style="width:${Math.min(pct, 100)}%"></div></div>
+    <div class="budget-card-footer">
+      <div class="budget-remain ${cls}">${remain >= 0 ? '잔여 ' + fmt(remain) : '초과 ' + fmt(Math.abs(remain))}</div>
+      <div class="budget-pct">${pct}%</div>
+    </div>
+  </div>`;
+}
+
+// ── BAR CHART ──────────────────────────────────────────────────────────
 function renderBarChart(elId, months, H) {
   const el = document.getElementById(elId);
   if (!el) return;
-  el.innerHTML = '';
   const data = [];
-  for (let i = months-1; i >= 0; i--) {
+  for (let i = months - 1; i >= 0; i--) {
     let m = currentMonth - i, y = currentYear;
     while (m < 0) { m += 12; y--; }
     const txs = getMonthTx(y, m);
-    data.push({ label: (m+1)+'월', income: sumInc(txs), expense: sumExp(txs) });
+    data.push({ label: (m + 1) + '월', income: sumInc(txs), expense: sumExp(txs) });
   }
-  const max = Math.max(...data.map(d=>Math.max(d.income,d.expense)), 1);
-  data.forEach(d => {
-    const g = document.createElement('div');
-    g.className = 'bar-group';
-    const bars = document.createElement('div');
-    bars.className = 'bars';
-    ['income','expense'].forEach(type => {
-      const b = document.createElement('div');
-      b.className = 'bar ' + type + '-bar';
-      const val = d[type];
-      b.style.height = Math.max((val/max)*H, val>0?3:0)+'px';
-      bars.appendChild(b);
-    });
-    const lbl = document.createElement('div');
-    lbl.className = 'bar-label';
-    lbl.textContent = d.label;
-    g.appendChild(bars); g.appendChild(lbl);
-    el.appendChild(g);
-  });
+  const max = Math.max(...data.map(d => Math.max(d.income, d.expense)), 1);
+  el.innerHTML = data.map(d => `
+    <div class="bar-group">
+      <div class="bars">
+        <div class="bar income-bar"  style="height:${Math.max((d.income  / max) * H, d.income  > 0 ? 3 : 0)}px"></div>
+        <div class="bar expense-bar" style="height:${Math.max((d.expense / max) * H, d.expense > 0 ? 3 : 0)}px"></div>
+      </div>
+      <div class="bar-label">${d.label}</div>
+    </div>`).join('');
 }
 
+// ── CATEGORY LIST ──────────────────────────────────────────────────────
 function renderCatList(elId, txs, type) {
   const el = document.getElementById(elId);
   if (!el) return;
-  const filtered = txs.filter(t=>t.type===type);
+  const filtered = txs.filter(t => t.type === type);
   if (!filtered.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:4px 0;">데이터가 없습니다.</div>'; return; }
-  const totals = {};
-  filtered.forEach(t => { totals[t.category] = (totals[t.category]||0) + t.amount; });
-  const sorted = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
-  const total = sorted.reduce((s,[,v])=>s+v, 0);
-  const max = sorted[0][1];
 
-  // 스택 바 세그먼트
+  const totals = {};
+  filtered.forEach(t => { totals[t.category] = (totals[t.category] || 0) + t.amount; });
+  const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  const total  = sorted.reduce((s, [, v]) => s + v, 0);
+  const max    = sorted[0][1];
+
   const segments = sorted.map(([cat, amt]) => {
     const pct = (amt / total * 100).toFixed(1);
-    return `<div class="stacked-seg" style="width:${pct}%;background:${CAT_COLORS[cat]||'#999'}" title="${cat} ${pct}%"></div>`;
+    return `<div class="stacked-seg" style="width:${pct}%;background:${CAT_COLORS[cat] || '#999'}" title="${cat} ${pct}%"></div>`;
   }).join('');
 
-  // 범례
-  const legend = sorted.map(([cat, amt]) => {
-    const pct = Math.round(amt / total * 100);
-    return `<div class="stacked-leg-item">
-      <div class="stacked-leg-dot" style="background:${CAT_COLORS[cat]||'#999'}"></div>
-      <span class="stacked-leg-name">${CAT_EMOJI[cat]||''} ${cat}</span>
-      <span class="stacked-leg-pct">${pct}%</span>
-    </div>`;
-  }).join('');
+  const legend = sorted.map(([cat, amt]) => `
+    <div class="stacked-leg-item">
+      <div class="stacked-leg-dot" style="background:${CAT_COLORS[cat] || '#999'}"></div>
+      <span class="stacked-leg-name">${CAT_EMOJI[cat] || ''} ${cat}</span>
+      <span class="stacked-leg-pct">${Math.round(amt / total * 100)}%</span>
+    </div>`).join('');
 
-  const stackedHtml = `<div class="stacked-bar-wrap">
-    <div class="stacked-bar">${segments}</div>
-    <div class="stacked-legend">${legend}</div>
-  </div>`;
-
-  // 바 차트 목록
-  const barList = sorted.map(([cat, amt]) => {
-    const pct = Math.round(amt / total * 100);
-    return `<div class="cat-item">
-      <div class="cat-emoji">${CAT_EMOJI[cat]||'📌'}</div>
+  const bars = sorted.map(([cat, amt]) => `
+    <div class="cat-item">
+      <div class="cat-emoji">${CAT_EMOJI[cat] || '📌'}</div>
       <div class="cat-name">${cat}</div>
-      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${(amt/max)*100}%;background:${CAT_COLORS[cat]||'#999'}"></div></div>
+      <div class="cat-bar-bg"><div class="cat-bar-fill" style="width:${(amt / max) * 100}%;background:${CAT_COLORS[cat] || '#999'}"></div></div>
       <div class="cat-amt">${fmt(amt)}</div>
-      <div class="cat-pct">${pct}%</div>
-    </div>`;
-  }).join('');
+      <div class="cat-pct">${Math.round(amt / total * 100)}%</div>
+    </div>`).join('');
 
-  el.innerHTML = stackedHtml + `<div class="cat-list">${barList}</div>`;
+  el.innerHTML = `<div class="stacked-bar">${segments}</div><div class="stacked-legend">${legend}</div><div class="cat-list">${bars}</div>`;
 }
 
-function renderTx(txs) {
+// ── TRANSACTIONS ───────────────────────────────────────────────────────
+function renderTx() {
   const el = document.getElementById('tx-container');
-  // include transfers in this month
-  const allMonthTx = transactions.filter(t => {
+  const allTx = transactions.filter(t => {
     const d = new Date(t.date);
     return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-  });
-  if (!allMonthTx.length) {
+  }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  if (!allTx.length) {
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">이번 달 거래 내역이 없습니다.</div></div>';
     return;
   }
-  const sorted = [...allMonthTx].sort((a,b) => new Date(b.date) - new Date(a.date));
+
   const groups = {};
-  sorted.forEach(t => { if (!groups[t.date]) groups[t.date]=[]; groups[t.date].push(t); });
+  allTx.forEach(t => { if (!groups[t.date]) groups[t.date] = []; groups[t.date].push(t); });
+
   el.innerHTML = Object.entries(groups).map(([date, items]) => {
-    const d = new Date(date);
+    const d   = new Date(date);
     const day = ['일','월','화','수','목','금','토'][d.getDay()];
     return `<div class="tx-section">
-      <div class="tx-date-label">${d.getMonth()+1}월 ${d.getDate()}일 (${day})</div>
+      <div class="tx-date-label">${d.getMonth() + 1}월 ${d.getDate()}일 (${day})</div>
       ${items.map(t => {
         const accName = t.type === 'transfer'
-          ? (accounts.find(a=>a.id===t.fromAccountId)?.name||'') + ' → ' + (accounts.find(a=>a.id===t.toAccountId)?.name||'')
-          : accounts.find(a=>a.id===t.accountId)?.name || '';
-        const iconClass = t.type==='transfer' ? 'transfer-icon' : t.recurring ? 'recurring-icon' : t.type+'-icon';
-        const amtClass = t.type==='transfer' ? 'transfer' : t.type;
-        const amtPrefix = t.type==='income' ? '+' : t.type==='transfer' ? '↔' : '-';
-        return `<div class="tx-item">
-          <div class="tx-icon ${iconClass}">${t.type==='transfer'?'↔️':CAT_EMOJI[t.category]||'📌'}</div>
+          ? (accounts.find(a => a.id === t.fromAccountId)?.name || '') + ' → ' + (accounts.find(a => a.id === t.toAccountId)?.name || '')
+          : accounts.find(a => a.id === t.accountId)?.name || '';
+        const iconClass = t.type === 'transfer' ? 'transfer-icon' : t.recurring ? 'recurring-icon' : t.type + '-icon';
+        const amtClass  = t.type === 'transfer' ? 'transfer' : t.type;
+        const prefix    = t.type === 'income' ? '+' : t.type === 'transfer' ? '↔' : '-';
+        return `<div class="tx-item" onclick="editTx('${t.id}')">
+          <div class="tx-icon ${iconClass}">${t.type === 'transfer' ? '↔️' : CAT_EMOJI[t.category] || '📌'}</div>
           <div class="tx-info">
-            <div class="tx-name">${t.desc || (t.type==='transfer'?'계좌 이체':t.category)}</div>
+            <div class="tx-name">${t.desc || (t.type === 'transfer' ? '계좌 이체' : t.category)}</div>
             <div class="tx-meta">
-              ${t.type!=='transfer'?`<span class="tx-cat">${t.category}</span>`:''}
-              ${accName?`<span class="tx-acc-badge">${accName}</span>`:''}
-              ${t.recurring?'<span class="tx-recurring-badge">반복</span>':''}
-              ${t.type==='transfer'?'<span class="tx-transfer-badge">이체</span>':''}
+              ${t.type !== 'transfer' ? `<span class="tx-cat">${t.category}</span>` : ''}
+              ${accName      ? `<span class="tx-badge acc">${accName}</span>` : ''}
+              ${t.recurring  ? `<span class="tx-badge recurring">반복</span>` : ''}
+              ${t.type === 'transfer' ? `<span class="tx-badge transfer">이체</span>` : ''}
             </div>
           </div>
           <div class="tx-right">
-            <div class="tx-amount ${amtClass}">${amtPrefix}${fmt(t.amount)}</div>
-            <button class="tx-delete" onclick="editTx('${t.id}')">✏️</button>
-            <button class="tx-delete" onclick="deleteTx('${t.id}')">✕</button>
+            <div class="tx-amount ${amtClass}">${prefix}${fmt(t.amount)}</div>
+            <button class="tx-del" onclick="deleteTxBtn(event,'${t.id}')">✕</button>
           </div>
         </div>`;
       }).join('')}
@@ -1112,10 +1015,11 @@ function renderTx(txs) {
   }).join('');
 }
 
+// ── ACCOUNTS ───────────────────────────────────────────────────────────
 function renderAccounts() {
-  const el = document.getElementById('accounts-list');
+  const el    = document.getElementById('accounts-list');
   const total = getTotalAsset();
-  document.getElementById('total-asset-badge').textContent = `총 ${total<0?'-':''}${fmt(total)}`;
+  document.getElementById('total-asset-badge').textContent = `총 ${total < 0 ? '-' : ''}${fmt(total)}`;
 
   if (!accounts.length) {
     el.innerHTML = '<div class="empty-state" style="padding:24px 0;"><div class="empty-icon">🏦</div><div class="empty-text">계좌를 추가해보세요.</div></div>';
@@ -1124,256 +1028,200 @@ function renderAccounts() {
   el.innerHTML = accounts.map(acc => {
     const bal = getAccountBalance(acc.id);
     return `<div class="account-full-card">
-      <div class="afc-icon type-${acc.type}">${ACC_TYPE_ICON[acc.type]||'🏦'}</div>
-      <div class="afc-info">
-        <div class="afc-name">${acc.name}</div>
-        <div class="afc-type">${ACC_TYPE_LABEL[acc.type]||''}</div>
-      </div>
+      <div class="afc-icon type-${acc.type}">${ACC_TYPE_ICON[acc.type]}</div>
+      <div class="afc-info"><div class="afc-name">${acc.name}</div><div class="afc-type">${ACC_TYPE_LABEL[acc.type]}</div></div>
       <div class="afc-right">
-        <div class="afc-balance ${bal>=0?'positive':'negative'}">${bal<0?'-':''}${fmt(bal)}</div>
+        <div class="afc-balance ${bal >= 0 ? 'positive' : 'negative'}">${bal < 0 ? '-' : ''}${fmt(bal)}</div>
         <div class="afc-initial">초기 ${acc.initialAmount < 0 ? '-' : ''}${fmt(acc.initialAmount)}</div>
       </div>
-      <button class="afc-edit" onclick="openEditAccountSheet('${acc.id}')">✏️</button>
-      <button class="afc-delete" onclick="deleteAccount('${acc.id}')">✕</button>
+      <button class="icon-btn" onclick="openEditAccountSheet('${acc.id}')">✏️</button>
+      <button class="icon-btn danger" onclick="deleteAccount('${acc.id}')">✕</button>
     </div>`;
   }).join('');
 }
 
+// ── RECURRING ──────────────────────────────────────────────────────────
 function renderRecurring() {
-  const el = document.getElementById('recurring-list');
-  const totalAmt = recurringItems.reduce((a,b)=>a+b.amount,0);
-  document.getElementById('rec-total-badge').textContent = '합계: ' + fmt(totalAmt);
+  const expTotal = recurringItems.reduce((a, b) => a + b.amount, 0);
+  const trTotal  = recurringTransfers.reduce((a, b) => a + b.amount, 0);
+  document.getElementById('rec-total-badge').textContent    = '합계: ' + fmt(expTotal);
+  document.getElementById('rec-tr-total-badge').textContent = '합계: ' + fmt(trTotal);
 
-  if (!recurringItems.length) {
-    el.innerHTML = '<div class="empty-state" style="padding:24px 0;"><div class="empty-icon">🔄</div><div class="empty-text">반복 지출이 없습니다.</div></div>';
-  } else {
-    el.innerHTML = recurringItems.map(r => {
-      const accName = accounts.find(a=>a.id===r.accountId)?.name || '';
-      return `<div class="recurring-item">
-        <div class="rec-icon">${CAT_EMOJI[r.category]||'📌'}</div>
-        <div class="rec-info">
-          <div class="rec-name">${r.name}</div>
-          <div class="rec-detail">매월 ${r.day}일 · ${r.category}${accName?' · '+accName:''}</div>
-        </div>
-        <div class="rec-right">
-          <div class="rec-amount">-${fmt(r.amount)}</div>
-          <button class="rec-delete" onclick="deleteRecurring('${r.id}')">✕</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
+  const recEl = document.getElementById('recurring-list');
+  recEl.innerHTML = recurringItems.length
+    ? recurringItems.map(r => `
+        <div class="rec-item">
+          <div class="rec-icon">${CAT_EMOJI[r.category] || '📌'}</div>
+          <div class="rec-info"><div class="rec-name">${r.name}</div><div class="rec-detail">매월 ${r.day}일 · ${r.category}${accounts.find(a=>a.id===r.accountId) ? ' · ' + accounts.find(a=>a.id===r.accountId).name : ''}</div></div>
+          <div class="rec-right"><div class="rec-amount">-${fmt(r.amount)}</div><button class="tx-del" onclick="deleteRecurring('${r.id}')">✕</button></div>
+        </div>`).join('')
+    : '<div class="empty-state" style="padding:20px 0;"><div class="empty-icon">🔄</div><div class="empty-text">반복 지출이 없습니다.</div></div>';
 
-  // 반복 이체 목록
   const trEl = document.getElementById('recurring-transfer-list');
-  const totalTrAmt = recurringTransfers.reduce((a,b)=>a+b.amount,0);
-  document.getElementById('rec-transfer-total-badge').textContent = '합계: ' + fmt(totalTrAmt);
+  trEl.innerHTML = recurringTransfers.length
+    ? recurringTransfers.map(r => {
+        const fromName = accounts.find(a => a.id === r.fromAccountId)?.name || '?';
+        const toName   = accounts.find(a => a.id === r.toAccountId)?.name   || '?';
+        return `<div class="rec-item">
+          <div class="rec-icon" style="background:var(--purple-bg);">↔️</div>
+          <div class="rec-info"><div class="rec-name">${r.name}</div><div class="rec-detail">매월 ${r.day}일 · ${fromName} → ${toName}</div></div>
+          <div class="rec-right"><div class="rec-amount transfer">${fmt(r.amount)}</div><button class="tx-del" onclick="deleteRecTransfer('${r.id}')">✕</button></div>
+        </div>`;
+      }).join('')
+    : '<div class="empty-state" style="padding:20px 0;"><div class="empty-icon">↔️</div><div class="empty-text">반복 이체가 없습니다.</div></div>';
 
-  if (!recurringTransfers.length) {
-    trEl.innerHTML = '<div class="empty-state" style="padding:24px 0;"><div class="empty-icon">↔️</div><div class="empty-text">반복 이체가 없습니다.</div></div>';
-  } else {
-    trEl.innerHTML = recurringTransfers.map(r => {
-      const fromName = accounts.find(a=>a.id===r.fromAccountId)?.name || '?';
-      const toName = accounts.find(a=>a.id===r.toAccountId)?.name || '?';
-      return `<div class="recurring-item">
-        <div class="rec-icon" style="background:var(--purple-bg);">↔️</div>
-        <div class="rec-info">
-          <div class="rec-name">${r.name}</div>
-          <div class="rec-detail">매월 ${r.day}일 · ${fromName} → ${toName}</div>
-        </div>
-        <div class="rec-right">
-          <div class="rec-amount" style="color:var(--purple);">${fmt(r.amount)}</div>
-          <button class="rec-delete" onclick="deleteRecTransfer('${r.id}')">✕</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // 이번 달 현황 (지출 + 이체 합산)
+  // 이번 달 현황
   const statusEl = document.getElementById('recurring-month-status');
   const today = new Date();
-  const isCurrentMonth = today.getFullYear()===currentYear && today.getMonth()===currentMonth;
+  const isCurrentMonth = today.getFullYear() === currentYear && today.getMonth() === currentMonth;
   const allRec = [
-    ...recurringItems.map(r => ({...r, recType:'expense'})),
-    ...recurringTransfers.map(r => ({...r, recType:'transfer'}))
-  ].sort((a,b) => a.day - b.day);
+    ...recurringItems.map(r => ({ ...r, recType: 'expense' })),
+    ...recurringTransfers.map(r => ({ ...r, recType: 'transfer' }))
+  ].sort((a, b) => a.day - b.day);
 
   if (!allRec.length) { statusEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:4px 0;">반복 항목을 추가해보세요.</div>'; return; }
 
   statusEl.innerHTML = allRec.map(r => {
-    const paid = transactions.some(t =>
-      (t.recurringId===r.id) &&
-      new Date(t.date).getFullYear()===currentYear &&
-      new Date(t.date).getMonth()===currentMonth
-    );
+    const paid   = transactions.some(t => t.recurringId === r.id && new Date(t.date).getFullYear() === currentYear && new Date(t.date).getMonth() === currentMonth);
     const isPast = isCurrentMonth ? today.getDate() >= r.day : true;
-    const icon = r.recType==='transfer' ? '↔️' : (CAT_EMOJI[r.category]||'📌');
-    const amtColor = r.recType==='transfer' ? 'var(--purple)' : 'var(--expense)';
-    const label = r.recType==='transfer'
-      ? (accounts.find(a=>a.id===r.fromAccountId)?.name||'?') + ' → ' + (accounts.find(a=>a.id===r.toAccountId)?.name||'?')
-      : `-${fmt(r.amount)}`;
-
+    const icon   = r.recType === 'transfer' ? '↔️' : (CAT_EMOJI[r.category] || '📌');
+    const color  = r.recType === 'transfer' ? 'var(--purple)' : 'var(--expense)';
+    const fn     = r.recType === 'transfer' ? `payRecTransfer('${r.id}')` : `payRecurring('${r.id}')`;
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);">
       <div style="display:flex;align-items:center;gap:10px;">
         <div style="font-size:18px;">${icon}</div>
         <div>
-          <div style="font-size:13px;font-weight:600;color:var(--text);">${r.name}</div>
-          <div style="font-size:11px;color:var(--text-muted);">매월 ${r.day}일 · <span style="color:${amtColor};">${fmt(r.amount)}</span></div>
+          <div style="font-size:13px;font-weight:600;">${r.name}</div>
+          <div style="font-size:11px;color:var(--text-muted);">매월 ${r.day}일 · <span style="color:${color};">${fmt(r.amount)}</span></div>
         </div>
       </div>
-      <div>
-        ${paid
-          ? '<span style="font-size:11px;padding:4px 10px;background:var(--income-bg);color:var(--income);border-radius:20px;font-weight:700;">✓ 완료</span>'
-          : isPast
-            ? `<button onclick="${r.recType==='transfer'?`payRecTransfer('${r.id}')`:`payRecurring('${r.id}')`}" style="font-size:12px;padding:6px 12px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;">등록</button>`
-            : `<span style="font-size:11px;padding:4px 10px;background:var(--bg2);color:var(--text-muted);border-radius:20px;">${r.day}일 예정</span>`
-        }
-      </div>
+      ${paid
+        ? '<span style="font-size:11px;padding:4px 10px;background:var(--income-bg);color:var(--income);border-radius:20px;font-weight:700;">✓ 완료</span>'
+        : isPast
+          ? `<button onclick="${fn}" style="font-size:12px;padding:6px 12px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;">등록</button>`
+          : `<span style="font-size:11px;padding:4px 10px;background:var(--bg2);color:var(--text-muted);border-radius:20px;">${r.day}일 예정</span>`
+      }
     </div>`;
   }).join('');
 }
 
+// ── STATS ──────────────────────────────────────────────────────────────
 function renderStats() {
   const txs = getMonthTx(currentYear, currentMonth);
-  const inc = sumInc(txs), exp = sumExp(txs);
-  const bal = inc - exp;
-  const rate = inc > 0 ? Math.round((bal/inc)*100) : 0;
-  document.getElementById('stats-rate').textContent = rate + '%';
-  document.getElementById('stats-saving-desc').textContent = inc > 0 ? `수입 ${fmt(inc)} 중 ${fmt(Math.max(bal,0))} 저축` : '수입 없음';
+  const inc = sumInc(txs), exp = sumExp(txs), bal = inc - exp;
+  const rate = inc > 0 ? Math.round((bal / inc) * 100) : 0;
+
+  document.getElementById('stats-rate').textContent        = rate + '%';
+  document.getElementById('stats-saving-desc').textContent = inc > 0 ? `수입 ${fmt(inc)} 중 ${fmt(Math.max(bal, 0))} 저축` : '수입 없음';
   const sbEl = document.getElementById('st-bal');
   sbEl.textContent = fmt(bal);
-  sbEl.className = 'qs-value ' + (bal >= 0 ? 'bal' : 'negative');
-  document.getElementById('st-inc').textContent = fmt(inc);
-  document.getElementById('st-exp').textContent = fmt(exp);
-  document.getElementById('st-inc-cnt').textContent = txs.filter(t=>t.type==='income').length + '건';
-  document.getElementById('st-exp-cnt').textContent = txs.filter(t=>t.type==='expense').length + '건';
+  sbEl.className   = 'qs-value ' + (bal >= 0 ? 'bal' : 'negative');
+  document.getElementById('st-inc').textContent     = fmt(inc);
+  document.getElementById('st-exp').textContent     = fmt(exp);
+  document.getElementById('st-inc-cnt').textContent = txs.filter(t => t.type === 'income').length  + '건';
+  document.getElementById('st-exp-cnt').textContent = txs.filter(t => t.type === 'expense').length + '건';
+
   renderBarChart('chart-stats', 6, 95);
   renderCatList('cat-exp-stats', txs, 'expense');
   renderCatList('cat-inc-stats', txs, 'income');
 
   const bdEl = document.getElementById('budget-settings-display');
-  if (budget.total > 0) {
-    const catEntries = Object.entries(budget.cats).filter(([,v])=>v>0);
-    bdEl.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:10px;">
-      <span style="font-size:13px;color:var(--text-dim);font-weight:500;">전체 예산</span>
-      <span style="font-size:16px;font-weight:700;color:var(--accent);">${fmt(budget.total)}</span>
-    </div>
-    ${catEntries.map(([cat,amt]) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
-      <span style="font-size:12px;color:var(--text-dim);">${CAT_EMOJI[cat]||''} ${cat}</span>
-      <span style="font-size:13px;font-weight:600;color:var(--text);">${fmt(amt)}</span>
-    </div>`).join('')}
-    ${!catEntries.length?'<div style="font-size:12px;color:var(--text-muted);">카테고리 예산 없음</div>':''}`;
+  if (budget.total) {
+    const cats = Object.entries(budget.cats).filter(([, v]) => v > 0);
+    bdEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:10px;">
+        <span style="font-size:13px;color:var(--text-dim);font-weight:500;">전체 예산</span>
+        <span style="font-size:16px;font-weight:700;color:var(--accent);">${fmt(budget.total)}</span>
+      </div>
+      ${cats.map(([cat, amt]) => `
+        <div style="display:flex;justify-content:space-between;padding:8px 0;">
+          <span style="font-size:12px;color:var(--text-dim);">${CAT_EMOJI[cat] || ''} ${cat}</span>
+          <span style="font-size:13px;font-weight:600;">${fmt(amt)}</span>
+        </div>`).join('')}
+      ${!cats.length ? '<div style="font-size:12px;color:var(--text-muted);">카테고리 예산 없음</div>' : ''}`;
   } else {
     bdEl.innerHTML = '<div style="color:var(--text-muted);font-size:13px;">예산이 설정되지 않았습니다.</div>';
   }
 }
 
-// TRANSACTION SHEET
-function buildAccountOptions(selectId, excludeId) {
-  const sel = document.getElementById(selectId);
-  if (!accounts.length) {
-    sel.innerHTML = '<option value="">계좌 없음 (계좌 탭에서 추가)</option>';
-  } else {
-    sel.innerHTML = accounts.filter(a => a.id !== excludeId).map(a =>
-      `<option value="${a.id}">${ACC_TYPE_ICON[a.type]} ${a.name}</option>`
-    ).join('');
-  }
-}
-
-let editingTxId = null;
-
+// ── TRANSACTION SHEET ──────────────────────────────────────────────────
 function openSheet() {
   editingTxId = null;
   document.getElementById('tx-sheet-title').textContent = '새 내역 추가';
-  document.getElementById('tx-save-btn').textContent = '저장하기';
-  document.getElementById('input-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('tx-save-btn').textContent    = '저장하기';
+  document.getElementById('input-date').value   = new Date().toISOString().slice(0, 10);
   document.getElementById('input-amount').value = '';
-  document.getElementById('input-desc').value = '';
+  document.getElementById('input-desc').value   = '';
   setType('expense');
   document.getElementById('sheet-bg').classList.add('open');
 }
+
+function closeSheet() { document.getElementById('sheet-bg').classList.remove('open'); }
 
 function editTx(id) {
   const t = transactions.find(t => t.id === id);
   if (!t) return;
   editingTxId = id;
   document.getElementById('tx-sheet-title').textContent = '내역 수정';
-  document.getElementById('tx-save-btn').textContent = '수정하기';
-  document.getElementById('input-date').value = t.date;
+  document.getElementById('tx-save-btn').textContent    = '수정하기';
+  document.getElementById('input-date').value   = t.date;
   document.getElementById('input-amount').value = t.amount;
-  document.getElementById('input-desc').value = t.desc || '';
+  document.getElementById('input-desc').value   = t.desc || '';
   setType(t.type);
-  // 카테고리 선택
   if (t.type !== 'transfer') {
-    document.getElementById('input-cat').value = t.category;
-    // 계좌 선택
-    if (t.accountId) document.getElementById('input-acc-from').value = t.accountId;
+    document.getElementById('input-cat').value      = t.category;
+    document.getElementById('input-acc-from').value = t.accountId || '';
   } else {
-    if (t.fromAccountId) document.getElementById('input-acc-from').value = t.fromAccountId;
-    if (t.toAccountId) document.getElementById('input-acc-to').value = t.toAccountId;
+    document.getElementById('input-acc-from').value = t.fromAccountId || '';
+    document.getElementById('input-acc-to').value   = t.toAccountId   || '';
   }
   document.getElementById('sheet-bg').classList.add('open');
 }
-function closeSheet() { document.getElementById('sheet-bg').classList.remove('open'); }
-function closeSheetBg(e) { if (e.target === document.getElementById('sheet-bg')) closeSheet(); }
 
 function setType(type) {
   modalType = type;
-  ['expense','income','transfer'].forEach(t => {
-    document.getElementById('btn-'+t).className = 'type-btn' + (t===type?' active '+t:'');
+  ['expense', 'income', 'transfer'].forEach(t => {
+    document.getElementById('btn-' + t).className = 'type-btn' + (t === type ? ' active ' + t : '');
   });
-  if (type === 'transfer') {
-    document.getElementById('cat-group').style.display = 'none';
-    document.getElementById('desc-group').style.display = 'block';
-    document.getElementById('acc-from-label').textContent = '출금 계좌';
-    document.getElementById('acc-to-group').style.display = 'block';
-    buildAccountOptions('input-acc-from', null);
-    buildAccountOptions('input-acc-to', null);
-  } else {
-    document.getElementById('cat-group').style.display = 'block';
-    document.getElementById('acc-to-group').style.display = 'none';
-    document.getElementById('acc-from-label').textContent = type === 'income' ? '입금 계좌' : '출금 계좌';
-    document.getElementById('input-cat').innerHTML =
-      CATEGORIES[type].map(c=>`<option value="${c}">${CAT_EMOJI[c]||''} ${c}</option>`).join('');
-    buildAccountOptions('input-acc-from', null);
+  const isTransfer = type === 'transfer';
+  document.getElementById('cat-group').style.display    = isTransfer ? 'none' : 'block';
+  document.getElementById('acc-to-group').style.display = isTransfer ? 'block' : 'none';
+  document.getElementById('acc-from-label').textContent = type === 'income' ? '입금 계좌' : '출금 계좌';
+  if (!isTransfer) {
+    document.getElementById('input-cat').innerHTML = CATEGORIES[type].map(c => `<option value="${c}">${CAT_EMOJI[c] || ''} ${c}</option>`).join('');
   }
+  buildAccountOptions('input-acc-from', null);
+  if (isTransfer) buildAccountOptions('input-acc-to', null);
 }
 
 function saveTransaction() {
-  const date = document.getElementById('input-date').value;
+  const date   = document.getElementById('input-date').value;
   const amount = parseInt(document.getElementById('input-amount').value);
-  const desc = document.getElementById('input-desc').value.trim();
+  const desc   = document.getElementById('input-desc').value.trim();
   if (!date || !amount || amount <= 0) { alert('날짜와 금액을 입력해주세요.'); return; }
 
-  let newTx;
+  let tx;
   if (modalType === 'transfer') {
     const fromId = document.getElementById('input-acc-from').value;
-    const toId = document.getElementById('input-acc-to').value;
+    const toId   = document.getElementById('input-acc-to').value;
     if (fromId === toId) { alert('출금 계좌와 입금 계좌가 같습니다.'); return; }
-    newTx = { date, amount, type: 'transfer', fromAccountId: fromId, toAccountId: toId, desc: desc || '계좌 이체' };
+    tx = { date, amount, type: 'transfer', fromAccountId: fromId, toAccountId: toId, desc: desc || '계좌 이체' };
   } else {
-    const cat = document.getElementById('input-cat').value;
-    const accId = document.getElementById('input-acc-from').value;
-    newTx = { date, amount, type: modalType, category: cat, accountId: accId, desc };
+    tx = { date, amount, type: modalType, category: document.getElementById('input-cat').value, accountId: document.getElementById('input-acc-from').value, desc };
   }
 
   if (editingTxId) {
     const idx = transactions.findIndex(t => t.id === editingTxId);
-    if (idx !== -1) transactions[idx] = { ...transactions[idx], ...newTx };
+    if (idx !== -1) transactions[idx] = { ...transactions[idx], ...tx };
   } else {
-    transactions.push({ id: Date.now().toString(), ...newTx });
+    transactions.push({ id: uid(), ...tx });
   }
   saveData(); closeSheet(); render();
 }
 
-function deleteTx(id) {
-  if (!confirm('삭제하시겠습니까?')) return;
-  transactions = transactions.filter(t => t.id !== id);
-  saveData(); render();
-}
+function deleteTxBtn(e, id) { e.stopPropagation(); deleteWithConfirm('내역 삭제', '이 내역을 삭제하면 복구할 수 없어요.', () => { transactions = transactions.filter(t => t.id !== id); saveData(); render(); }); }
 
-// ACCOUNT SHEET
-let editingAccountId = null;
-
+// ── ACCOUNT SHEET ──────────────────────────────────────────────────────
 function selectAccType(btn) {
   document.querySelectorAll('#acc-type-grid .type-grid-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -1383,13 +1231,11 @@ function selectAccType(btn) {
 function openAccountSheet() {
   editingAccountId = null;
   document.getElementById('acc-sheet-title').textContent = '계좌 추가';
-  document.getElementById('acc-save-btn').textContent = '추가하기';
-  document.getElementById('acc-name').value = '';
+  document.getElementById('acc-save-btn').textContent    = '추가하기';
+  document.getElementById('acc-name').value    = '';
   document.getElementById('acc-initial').value = '';
   selectedAccType = 'checking';
-  document.querySelectorAll('#acc-type-grid .type-grid-btn').forEach(b => {
-    b.classList.toggle('selected', b.dataset.type === 'checking');
-  });
+  document.querySelectorAll('#acc-type-grid .type-grid-btn').forEach(b => b.classList.toggle('selected', b.dataset.type === 'checking'));
   document.getElementById('acc-sheet-bg').classList.add('open');
 }
 
@@ -1398,143 +1244,143 @@ function openEditAccountSheet(id) {
   if (!acc) return;
   editingAccountId = id;
   document.getElementById('acc-sheet-title').textContent = '계좌 수정';
-  document.getElementById('acc-save-btn').textContent = '저장하기';
-  document.getElementById('acc-name').value = acc.name;
+  document.getElementById('acc-save-btn').textContent    = '저장하기';
+  document.getElementById('acc-name').value    = acc.name;
   document.getElementById('acc-initial').value = acc.initialAmount;
   selectedAccType = acc.type;
-  document.querySelectorAll('#acc-type-grid .type-grid-btn').forEach(b => {
-    b.classList.toggle('selected', b.dataset.type === acc.type);
-  });
+  document.querySelectorAll('#acc-type-grid .type-grid-btn').forEach(b => b.classList.toggle('selected', b.dataset.type === acc.type));
   document.getElementById('acc-sheet-bg').classList.add('open');
 }
 
 function closeAccSheet() { document.getElementById('acc-sheet-bg').classList.remove('open'); }
-function closeAccSheetBg(e) { if (e.target === document.getElementById('acc-sheet-bg')) closeAccSheet(); }
 
 function saveAccount() {
-  const name = document.getElementById('acc-name').value.trim();
+  const name    = document.getElementById('acc-name').value.trim();
   const initial = parseFloat(document.getElementById('acc-initial').value) || 0;
   if (!name) { alert('계좌 이름을 입력해주세요.'); return; }
   if (editingAccountId) {
     const idx = accounts.findIndex(a => a.id === editingAccountId);
     if (idx !== -1) accounts[idx] = { ...accounts[idx], name, type: selectedAccType, initialAmount: initial };
   } else {
-    accounts.push({ id: Date.now().toString(), name, type: selectedAccType, initialAmount: initial });
+    accounts.push({ id: uid(), name, type: selectedAccType, initialAmount: initial });
   }
   saveData(); closeAccSheet(); render();
 }
 
 function deleteAccount(id) {
-  const used = transactions.some(t => t.accountId===id || t.fromAccountId===id || t.toAccountId===id);
-  if (used && !confirm('이 계좌의 거래 내역이 있습니다. 그래도 삭제하시겠습니까?')) return;
-  if (!used && !confirm('삭제하시겠습니까?')) return;
-  accounts = accounts.filter(a => a.id !== id);
-  saveData(); render();
+  const used = transactions.some(t => t.accountId === id || t.fromAccountId === id || t.toAccountId === id);
+  deleteWithConfirm('계좌 삭제', used ? '거래 내역이 있는 계좌예요. 그래도 삭제할까요?' : '이 계좌를 삭제할까요?', () => {
+    accounts = accounts.filter(a => a.id !== id);
+    saveData(); render();
+  });
 }
 
-// RECURRING SHEET
+// ── RECURRING EXPENSE SHEET ────────────────────────────────────────────
 function openRecurringSheet() {
-  document.getElementById('rec-day').value = '';
-  document.getElementById('rec-amount').value = '';
-  document.getElementById('rec-name').value = '';
+  ['rec-day','rec-amount','rec-name'].forEach(id => document.getElementById(id).value = '');
   buildAccountOptions('rec-acc', null);
   document.getElementById('rec-sheet-bg').classList.add('open');
 }
 function closeRecSheet() { document.getElementById('rec-sheet-bg').classList.remove('open'); }
-function closeRecSheetBg(e) { if (e.target === document.getElementById('rec-sheet-bg')) closeRecSheet(); }
 
 function saveRecurring() {
-  const day = parseInt(document.getElementById('rec-day').value);
+  const day    = parseInt(document.getElementById('rec-day').value);
   const amount = parseInt(document.getElementById('rec-amount').value);
-  const name = document.getElementById('rec-name').value.trim();
-  const cat = document.getElementById('rec-cat').value;
-  const accId = document.getElementById('rec-acc').value;
-  if (!day || day<1 || day>31 || !amount || !name) { alert('모든 항목을 입력해주세요.'); return; }
-  recurringItems.push({ id: Date.now().toString(), day, amount, name, category: cat, accountId: accId });
+  const name   = document.getElementById('rec-name').value.trim();
+  const cat    = document.getElementById('rec-cat').value;
+  const accId  = document.getElementById('rec-acc').value;
+  if (!day || day < 1 || day > 31 || !amount || !name) { alert('모든 항목을 입력해주세요.'); return; }
+  recurringItems.push({ id: uid(), day, amount, name, category: cat, accountId: accId });
   saveData(); closeRecSheet(); render();
 }
 
 function deleteRecurring(id) {
-  if (!confirm('삭제하시겠습니까?')) return;
-  recurringItems = recurringItems.filter(r => r.id !== id);
-  saveData(); render();
+  deleteWithConfirm('반복 지출 삭제', '이 반복 지출을 삭제할까요?', () => {
+    recurringItems = recurringItems.filter(r => r.id !== id);
+    saveData(); render();
+  });
 }
 
 function payRecurring(id) {
-  const r = recurringItems.find(r=>r.id===id);
+  const r = recurringItems.find(r => r.id === id);
   if (!r) return;
-  const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(r.day).padStart(2,'0')}`;
-  transactions.push({ id: Date.now().toString(), date: dateStr, amount: r.amount, type: 'expense', category: r.category, accountId: r.accountId, desc: r.name, recurring: true, recurringId: r.id });
+  const date = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`;
+  transactions.push({ id: uid(), date, amount: r.amount, type: 'expense', category: r.category, accountId: r.accountId, desc: r.name, recurring: true, recurringId: r.id });
   saveData(); render();
 }
 
-// RECURRING TRANSFER
+// ── RECURRING TRANSFER SHEET ───────────────────────────────────────────
 function openRecTransferSheet() {
-  document.getElementById('rec-tr-day').value = '';
-  document.getElementById('rec-tr-amount').value = '';
-  document.getElementById('rec-tr-name').value = '';
+  ['rec-tr-day','rec-tr-amount','rec-tr-name'].forEach(id => document.getElementById(id).value = '');
   buildAccountOptions('rec-tr-from', null);
   buildAccountOptions('rec-tr-to', null);
-  document.getElementById('rec-transfer-sheet-bg').classList.add('open');
+  document.getElementById('rec-tr-sheet-bg').classList.add('open');
 }
-function closeRecTransferSheet() { document.getElementById('rec-transfer-sheet-bg').classList.remove('open'); }
-function closeRecTransferSheetBg(e) { if (e.target === document.getElementById('rec-transfer-sheet-bg')) closeRecTransferSheet(); }
+function closeRecTransferSheet() { document.getElementById('rec-tr-sheet-bg').classList.remove('open'); }
 
 function saveRecTransfer() {
-  const day = parseInt(document.getElementById('rec-tr-day').value);
+  const day    = parseInt(document.getElementById('rec-tr-day').value);
   const amount = parseInt(document.getElementById('rec-tr-amount').value);
-  const name = document.getElementById('rec-tr-name').value.trim();
+  const name   = document.getElementById('rec-tr-name').value.trim();
   const fromId = document.getElementById('rec-tr-from').value;
-  const toId = document.getElementById('rec-tr-to').value;
-  if (!day || day<1 || day>31 || !amount || !name) { alert('모든 항목을 입력해주세요.'); return; }
+  const toId   = document.getElementById('rec-tr-to').value;
+  if (!day || day < 1 || day > 31 || !amount || !name) { alert('모든 항목을 입력해주세요.'); return; }
   if (fromId === toId) { alert('출금 계좌와 입금 계좌가 같습니다.'); return; }
-  recurringTransfers.push({ id: Date.now().toString(), day, amount, name, fromAccountId: fromId, toAccountId: toId });
+  recurringTransfers.push({ id: uid(), day, amount, name, fromAccountId: fromId, toAccountId: toId });
   saveData(); closeRecTransferSheet(); render();
 }
 
 function deleteRecTransfer(id) {
-  if (!confirm('삭제하시겠습니까?')) return;
-  recurringTransfers = recurringTransfers.filter(r => r.id !== id);
-  saveData(); render();
+  deleteWithConfirm('반복 이체 삭제', '이 반복 이체를 삭제할까요?', () => {
+    recurringTransfers = recurringTransfers.filter(r => r.id !== id);
+    saveData(); render();
+  });
 }
 
 function payRecTransfer(id) {
-  const r = recurringTransfers.find(r=>r.id===id);
+  const r = recurringTransfers.find(r => r.id === id);
   if (!r) return;
-  const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(r.day).padStart(2,'0')}`;
-  transactions.push({ id: Date.now().toString(), date: dateStr, amount: r.amount, type: 'transfer', fromAccountId: r.fromAccountId, toAccountId: r.toAccountId, desc: r.name, recurring: true, recurringId: r.id });
+  const date = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`;
+  transactions.push({ id: uid(), date, amount: r.amount, type: 'transfer', fromAccountId: r.fromAccountId, toAccountId: r.toAccountId, desc: r.name, recurring: true, recurringId: r.id });
   saveData(); render();
 }
 
-// BUDGET SHEET
+// ── BUDGET SHEET ───────────────────────────────────────────────────────
 function openBudgetSheet() {
   document.getElementById('budget-total').value = budget.total || '';
   document.getElementById('budget-cat-inputs').innerHTML = CATEGORIES.expense.map(cat => `
     <div class="budget-cat-item">
-      <div class="bci-label">${CAT_EMOJI[cat]||''} ${cat}</div>
-      <input type="number" inputmode="numeric" class="bci-input" id="bcat-${cat}" placeholder="0" value="${budget.cats[cat]||''}">
+      <div class="bci-label">${CAT_EMOJI[cat] || ''} ${cat}</div>
+      <input type="number" inputmode="numeric" class="bci-input" id="bcat-${cat}" placeholder="0" value="${budget.cats[cat] || ''}">
     </div>`).join('');
   document.getElementById('budget-sheet-bg').classList.add('open');
 }
 function closeBudgetSheet() { document.getElementById('budget-sheet-bg').classList.remove('open'); }
-function closeBudgetSheetBg(e) { if (e.target === document.getElementById('budget-sheet-bg')) closeBudgetSheet(); }
 
 function saveBudget() {
   const total = parseInt(document.getElementById('budget-total').value) || 0;
-  const cats = {};
+  const cats  = {};
   CATEGORIES.expense.forEach(cat => {
-    const v = parseInt(document.getElementById('bcat-'+cat)?.value) || 0;
+    const v = parseInt(document.getElementById('bcat-' + cat)?.value) || 0;
     if (v > 0) cats[cat] = v;
   });
   budget = { total, cats };
   saveData(); closeBudgetSheet(); render();
 }
 
-// INIT
-document.getElementById('month-label').textContent =
-  currentYear + '. ' + String(currentMonth+1).padStart(2,'0');
+// ── CUSTOM CONFIRM ─────────────────────────────────────────────────────
+function deleteWithConfirm(title, desc, onOk) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-desc').textContent  = desc;
+  document.getElementById('confirm-ok-btn').onclick    = () => { closeConfirm(); onOk(); };
+  document.getElementById('confirm-bg').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirm-bg').classList.remove('open'); }
+
+// ── INIT ───────────────────────────────────────────────────────────────
+document.getElementById('month-label').textContent = currentYear + '. ' + String(currentMonth + 1).padStart(2, '0');
 setType('expense');
 render();
 </script>
 </body>
-                                                                                         </html>
+</html>
