@@ -681,7 +681,7 @@ body {
           <option value="주거">🏠 주거</option><option value="통신">📱 통신</option>
           <option value="문화/여가">🎬 문화/여가</option><option value="교육">📚 교육</option>
           <option value="교통">🚇 교통</option><option value="육아">🍼 육아</option>
-          <option value="저축">🐷 저축</option><option value="기타지출">📌 기타지출</option>
+          <option value="기타지출">📌 기타지출</option>
         </select>
       </div>
       <div class="form-group"><label class="form-label">출금 계좌</label><select class="form-select" id="rec-acc"></select></div>
@@ -737,20 +737,20 @@ body {
 <script>
 // ── CONSTANTS ──────────────────────────────────────────────────────────
 const CATEGORIES = {
-  expense: ['식비','교통','주거','쇼핑','의료','문화/여가','교육','통신','육아','저축','기타지출'],
+  expense: ['식비','교통','주거','쇼핑','의료','문화/여가','교육','통신','육아','기타지출'],
   income:  ['급여','부업','투자','용돈','환급','기타수입'],
   transfer: []
 };
 
 const CAT_COLORS = {
   '식비':'#E05C4B','교통':'#D4A853','주거':'#3A9E5F','쇼핑':'#3B82C4','의료':'#9B59B6',
-  '문화/여가':'#C0399B','교육':'#16A085','통신':'#D4A853','육아':'#F0A500','저축':'#2D7D46','기타지출':'#8E8880',
+  '문화/여가':'#C0399B','교육':'#16A085','통신':'#D4A853','육아':'#F0A500','기타지출':'#8E8880',
   '급여':'#2D7D46','부업':'#3B82C4','투자':'#D4A853','용돈':'#9B59B6','환급':'#16A085','기타수입':'#8E8880'
 };
 
 const CAT_EMOJI = {
   '식비':'🍚','교통':'🚇','주거':'🏠','쇼핑':'🛍','의료':'💊','문화/여가':'🎬','교육':'📚',
-  '통신':'📱','육아':'🍼','저축':'🐷','기타지출':'📌',
+  '통신':'📱','육아':'🍼','기타지출':'📌',
   '급여':'💰','부업':'💼','투자':'📈','용돈':'🎁','환급':'💸','기타수입':'✨'
 };
 
@@ -1108,16 +1108,27 @@ function renderRecurring() {
 // ── STATS ──────────────────────────────────────────────────────────────
 function renderStats() {
   const txs = getMonthTx(currentYear, currentMonth);
-  const inc = sumInc(txs), exp = sumExp(txs), bal = inc - exp;
-  const rate = inc > 0 ? Math.round((bal / inc) * 100) : 0;
+  const inc     = sumInc(txs);
+  const expOnly = txs.filter(t => t.type === 'expense').reduce((a, b) => a + b.amount, 0);
 
-  document.getElementById('stats-rate').textContent        = rate + '%';
-  document.getElementById('stats-saving-desc').textContent = inc > 0 ? `수입 ${fmt(inc)} 중 ${fmt(Math.max(bal, 0))} 저축` : '수입 없음';
+  // 저축액 = 이번 달 이체 중 적금/투자 계좌로 들어간 금액
+  const savedAmt = txs
+    .filter(t => t.type === 'transfer')
+    .filter(t => { const acc = accounts.find(a => a.id === t.toAccountId); return acc && (acc.type === 'savings' || acc.type === 'investment'); })
+    .reduce((a, b) => a + b.amount, 0);
+
+  const rate = inc > 0 ? Math.round((savedAmt / inc) * 100) : 0;
+
+  document.getElementById('stats-rate').textContent = rate + '%';
+  document.getElementById('stats-saving-desc').textContent = inc > 0
+    ? `수입 ${fmt(inc)} 중 ${fmt(savedAmt)} 저축`
+    : '수입 없음';
+
   const sbEl = document.getElementById('st-bal');
-  sbEl.textContent = fmt(bal);
-  sbEl.className   = 'qs-value ' + (bal >= 0 ? 'bal' : 'negative');
+  sbEl.textContent = fmt(inc - expOnly);
+  sbEl.className   = 'qs-value ' + ((inc - expOnly) >= 0 ? 'bal' : 'negative');
   document.getElementById('st-inc').textContent     = fmt(inc);
-  document.getElementById('st-exp').textContent     = fmt(exp);
+  document.getElementById('st-exp').textContent     = fmt(expOnly);
   document.getElementById('st-inc-cnt').textContent = txs.filter(t => t.type === 'income').length  + '건';
   document.getElementById('st-exp-cnt').textContent = txs.filter(t => t.type === 'expense').length + '건';
 
