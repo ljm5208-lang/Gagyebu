@@ -331,8 +331,9 @@ body {
   display: flex; align-items: center; gap: 14px;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow); cursor: pointer; transition: background 0.15s;
 }
+.account-full-card:active { background: var(--bg2); box-shadow: none; }
 .afc-icon { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
 .afc-icon.type-checking  { background: var(--blue-bg); }
 .afc-icon.type-savings   { background: var(--income-bg); }
@@ -360,8 +361,9 @@ body {
   display: flex; align-items: center; gap: 12px;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 12px; padding: 13px 14px; margin-bottom: 8px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow); cursor: pointer; transition: background 0.15s;
 }
+.rec-item:active { background: var(--bg2); box-shadow: none; }
 .rec-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--blue-bg); }
 .rec-info { flex: 1; min-width: 0; }
 .rec-name   { font-size: 14px; font-weight: 600; }
@@ -485,6 +487,16 @@ body {
 .confirm-cancel:active { background: var(--border); }
 .confirm-ok:active { opacity: 0.85; }
 
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: calc(80px + var(--safe-bottom)); left: 50%; transform: translateX(-50%);
+  background: #1C1A17; color: #fff; font-size: 13px; font-weight: 600;
+  padding: 10px 20px; border-radius: 20px; z-index: 200;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
 ::-webkit-scrollbar { width: 0; }
 @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .anim { animation: slideUp 0.28s ease both; }
@@ -597,12 +609,6 @@ body {
       </div>
       <div class="card anim" style="animation-delay:0.18s;"><div class="card-title">지출 카테고리</div><div id="cat-exp-stats"></div></div>
       <div class="card anim" style="animation-delay:0.22s;"><div class="card-title">수입 카테고리</div><div id="cat-inc-stats"></div></div>
-      <div class="card anim" style="animation-delay:0.26s;">
-        <div class="card-title">예산 설정
-          <button onclick="openBudgetSheet()" style="font-size:11px;padding:5px 12px;background:var(--accent-bg);border:1.5px solid var(--accent);border-radius:8px;color:var(--accent);font-weight:700;cursor:pointer;font-family:inherit;">수정</button>
-        </div>
-        <div id="budget-settings-display"></div>
-      </div>
     </div>
 
   </div>
@@ -668,7 +674,7 @@ body {
 <div class="sheet-bg" id="rec-sheet-bg" onclick="if(event.target===this)closeRecSheet()">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">반복 지출 추가</div>
+    <div class="sheet-title" id="rec-sheet-title">반복 지출 추가</div>
     <div class="sheet-body">
       <div class="form-row">
         <div class="form-group"><label class="form-label">매월 결제일</label><input type="number" inputmode="numeric" class="form-input" id="rec-day" placeholder="15" min="1" max="31"></div>
@@ -685,7 +691,7 @@ body {
         </select>
       </div>
       <div class="form-group"><label class="form-label">출금 계좌</label><select class="form-select" id="rec-acc"></select></div>
-      <button class="btn-save" onclick="saveRecurring()">추가하기</button>
+      <button class="btn-save" id="rec-save-btn" onclick="saveRecurring()">추가하기</button>
     </div>
   </div>
 </div>
@@ -694,7 +700,7 @@ body {
 <div class="sheet-bg" id="rec-tr-sheet-bg" onclick="if(event.target===this)closeRecTransferSheet()">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">반복 이체 추가</div>
+    <div class="sheet-title" id="rec-tr-sheet-title">반복 이체 추가</div>
     <div class="sheet-body">
       <div class="form-row">
         <div class="form-group"><label class="form-label">매월 이체일</label><input type="number" inputmode="numeric" class="form-input" id="rec-tr-day" placeholder="25" min="1" max="31"></div>
@@ -703,7 +709,7 @@ body {
       <div class="form-group"><label class="form-label">이름</label><input type="text" class="form-input" id="rec-tr-name" placeholder="예: 청약저축, 주식 투자..."></div>
       <div class="form-group"><label class="form-label">출금 계좌</label><select class="form-select" id="rec-tr-from"></select></div>
       <div class="form-group"><label class="form-label">입금 계좌</label><select class="form-select" id="rec-tr-to"></select></div>
-      <button class="btn-save" onclick="saveRecTransfer()">추가하기</button>
+      <button class="btn-save" id="rec-tr-save-btn" onclick="saveRecTransfer()">추가하기</button>
     </div>
   </div>
 </div>
@@ -721,6 +727,9 @@ body {
     </div>
   </div>
 </div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <!-- CUSTOM CONFIRM -->
 <div class="confirm-bg" id="confirm-bg">
@@ -897,8 +906,14 @@ function renderBudgetStatus(exp) {
     ? `<div class="alert-banner warn anim"><div class="alert-icon">⚠️</div><div><div class="alert-title warn">예산의 ${pct}% 사용했어요</div><div class="alert-sub">잔여 예산: ${fmt(remain)}</div></div></div>`
     : '';
 
-  budgetEl.innerHTML = `<div class="budget-card anim">
-    <div class="budget-card-header"><div class="budget-card-title">이번 달 예산</div><div class="budget-card-amounts">${fmt(exp)} / ${fmt(budget.total)}</div></div>
+  budgetEl.innerHTML = `<div class="budget-card anim" onclick="openBudgetSheet()" style="cursor:pointer;">
+    <div class="budget-card-header">
+      <div class="budget-card-title">이번 달 예산</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="budget-card-amounts">${fmt(exp)} / ${fmt(budget.total)}</div>
+        <span style="font-size:11px;color:var(--accent);font-weight:600;">수정</span>
+      </div>
+    </div>
     <div class="budget-bar-bg"><div class="budget-bar-fill ${cls}" style="width:${Math.min(pct, 100)}%"></div></div>
     <div class="budget-card-footer">
       <div class="budget-remain ${cls}">${remain >= 0 ? '잔여 ' + fmt(remain) : '초과 ' + fmt(Math.abs(remain))}</div>
@@ -1027,15 +1042,14 @@ function renderAccounts() {
   }
   el.innerHTML = accounts.map(acc => {
     const bal = getAccountBalance(acc.id);
-    return `<div class="account-full-card">
+    return `<div class="account-full-card" onclick="openEditAccountSheet('${acc.id}')" style="cursor:pointer;">
       <div class="afc-icon type-${acc.type}">${ACC_TYPE_ICON[acc.type]}</div>
       <div class="afc-info"><div class="afc-name">${acc.name}</div><div class="afc-type">${ACC_TYPE_LABEL[acc.type]}</div></div>
       <div class="afc-right">
         <div class="afc-balance ${bal >= 0 ? 'positive' : 'negative'}">${bal < 0 ? '-' : ''}${fmt(bal)}</div>
         <div class="afc-initial">초기 ${acc.initialAmount < 0 ? '-' : ''}${fmt(acc.initialAmount)}</div>
       </div>
-      <button class="icon-btn" onclick="openEditAccountSheet('${acc.id}')">✏️</button>
-      <button class="icon-btn danger" onclick="deleteAccount('${acc.id}')">✕</button>
+      <button class="icon-btn danger" onclick="deleteAccount(event,'${acc.id}')">✕</button>
     </div>`;
   }).join('');
 }
@@ -1050,10 +1064,10 @@ function renderRecurring() {
   const recEl = document.getElementById('recurring-list');
   recEl.innerHTML = recurringItems.length
     ? recurringItems.map(r => `
-        <div class="rec-item">
+        <div class="rec-item" onclick="openEditRecurringSheet('${r.id}')" style="cursor:pointer;">
           <div class="rec-icon">${CAT_EMOJI[r.category] || '📌'}</div>
           <div class="rec-info"><div class="rec-name">${r.name}</div><div class="rec-detail">매월 ${r.day}일 · ${r.category}${accounts.find(a=>a.id===r.accountId) ? ' · ' + accounts.find(a=>a.id===r.accountId).name : ''}</div></div>
-          <div class="rec-right"><div class="rec-amount">-${fmt(r.amount)}</div><button class="tx-del" onclick="deleteRecurring('${r.id}')">✕</button></div>
+          <div class="rec-right"><div class="rec-amount">-${fmt(r.amount)}</div><button class="tx-del" onclick="deleteRecurringBtn(event,'${r.id}')">✕</button></div>
         </div>`).join('')
     : '<div class="empty-state" style="padding:20px 0;"><div class="empty-icon">🔄</div><div class="empty-text">반복 지출이 없습니다.</div></div>';
 
@@ -1062,10 +1076,10 @@ function renderRecurring() {
     ? recurringTransfers.map(r => {
         const fromName = accounts.find(a => a.id === r.fromAccountId)?.name || '?';
         const toName   = accounts.find(a => a.id === r.toAccountId)?.name   || '?';
-        return `<div class="rec-item">
+        return `<div class="rec-item" onclick="openEditRecTransferSheet('${r.id}')" style="cursor:pointer;">
           <div class="rec-icon" style="background:var(--purple-bg);">↔️</div>
           <div class="rec-info"><div class="rec-name">${r.name}</div><div class="rec-detail">매월 ${r.day}일 · ${fromName} → ${toName}</div></div>
-          <div class="rec-right"><div class="rec-amount transfer">${fmt(r.amount)}</div><button class="tx-del" onclick="deleteRecTransfer('${r.id}')">✕</button></div>
+          <div class="rec-right"><div class="rec-amount transfer">${fmt(r.amount)}</div><button class="tx-del" onclick="deleteRecTransferBtn(event,'${r.id}')">✕</button></div>
         </div>`;
       }).join('')
     : '<div class="empty-state" style="padding:20px 0;"><div class="empty-icon">↔️</div><div class="empty-text">반복 이체가 없습니다.</div></div>';
@@ -1157,6 +1171,11 @@ function renderStats() {
 
 // ── TRANSACTION SHEET ──────────────────────────────────────────────────
 function openSheet() {
+  if (!accounts.length) {
+    showToast('⚠️ 먼저 계좌 탭에서 계좌를 추가해주세요');
+    showView('accounts');
+    return;
+  }
   editingTxId = null;
   document.getElementById('tx-sheet-title').textContent = '새 내역 추가';
   document.getElementById('tx-save-btn').textContent    = '저장하기';
@@ -1278,7 +1297,8 @@ function saveAccount() {
   saveData(); closeAccSheet(); render();
 }
 
-function deleteAccount(id) {
+function deleteAccount(e, id) {
+  e.stopPropagation();
   const used = transactions.some(t => t.accountId === id || t.fromAccountId === id || t.toAccountId === id);
   deleteWithConfirm('계좌 삭제', used ? '거래 내역이 있는 계좌예요. 그래도 삭제할까요?' : '이 계좌를 삭제할까요?', () => {
     accounts = accounts.filter(a => a.id !== id);
@@ -1287,11 +1307,33 @@ function deleteAccount(id) {
 }
 
 // ── RECURRING EXPENSE SHEET ────────────────────────────────────────────
+let editingRecId   = null;
+let editingRecTrId = null;
+
 function openRecurringSheet() {
+  editingRecId = null;
+  document.getElementById('rec-sheet-title').textContent = '반복 지출 추가';
+  document.getElementById('rec-save-btn').textContent    = '추가하기';
   ['rec-day','rec-amount','rec-name'].forEach(id => document.getElementById(id).value = '');
   buildAccountOptions('rec-acc', null);
   document.getElementById('rec-sheet-bg').classList.add('open');
 }
+
+function openEditRecurringSheet(id) {
+  const r = recurringItems.find(r => r.id === id);
+  if (!r) return;
+  editingRecId = id;
+  document.getElementById('rec-sheet-title').textContent = '반복 지출 수정';
+  document.getElementById('rec-save-btn').textContent    = '저장하기';
+  document.getElementById('rec-day').value    = r.day;
+  document.getElementById('rec-amount').value = r.amount;
+  document.getElementById('rec-name').value   = r.name;
+  document.getElementById('rec-cat').value    = r.category;
+  buildAccountOptions('rec-acc', null);
+  document.getElementById('rec-acc').value = r.accountId || '';
+  document.getElementById('rec-sheet-bg').classList.add('open');
+}
+
 function closeRecSheet() { document.getElementById('rec-sheet-bg').classList.remove('open'); }
 
 function saveRecurring() {
@@ -1301,10 +1343,16 @@ function saveRecurring() {
   const cat    = document.getElementById('rec-cat').value;
   const accId  = document.getElementById('rec-acc').value;
   if (!day || day < 1 || day > 31 || !amount || !name) { alert('모든 항목을 입력해주세요.'); return; }
-  recurringItems.push({ id: uid(), day, amount, name, category: cat, accountId: accId });
+  if (editingRecId) {
+    const idx = recurringItems.findIndex(r => r.id === editingRecId);
+    if (idx !== -1) recurringItems[idx] = { ...recurringItems[idx], day, amount, name, category: cat, accountId: accId };
+  } else {
+    recurringItems.push({ id: uid(), day, amount, name, category: cat, accountId: accId });
+  }
   saveData(); closeRecSheet(); render();
 }
 
+function deleteRecurringBtn(e, id) { e.stopPropagation(); deleteRecurring(id); }
 function deleteRecurring(id) {
   deleteWithConfirm('반복 지출 삭제', '이 반복 지출을 삭제할까요?', () => {
     recurringItems = recurringItems.filter(r => r.id !== id);
@@ -1318,15 +1366,36 @@ function payRecurring(id) {
   const date = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`;
   transactions.push({ id: uid(), date, amount: r.amount, type: 'expense', category: r.category, accountId: r.accountId, desc: r.name, recurring: true, recurringId: r.id });
   saveData(); render();
+  showToast('✓ 내역에 등록됐어요');
 }
 
 // ── RECURRING TRANSFER SHEET ───────────────────────────────────────────
 function openRecTransferSheet() {
+  editingRecTrId = null;
+  document.getElementById('rec-tr-sheet-title').textContent = '반복 이체 추가';
+  document.getElementById('rec-tr-save-btn').textContent    = '추가하기';
   ['rec-tr-day','rec-tr-amount','rec-tr-name'].forEach(id => document.getElementById(id).value = '');
   buildAccountOptions('rec-tr-from', null);
   buildAccountOptions('rec-tr-to', null);
   document.getElementById('rec-tr-sheet-bg').classList.add('open');
 }
+
+function openEditRecTransferSheet(id) {
+  const r = recurringTransfers.find(r => r.id === id);
+  if (!r) return;
+  editingRecTrId = id;
+  document.getElementById('rec-tr-sheet-title').textContent = '반복 이체 수정';
+  document.getElementById('rec-tr-save-btn').textContent    = '저장하기';
+  document.getElementById('rec-tr-day').value    = r.day;
+  document.getElementById('rec-tr-amount').value = r.amount;
+  document.getElementById('rec-tr-name').value   = r.name;
+  buildAccountOptions('rec-tr-from', null);
+  buildAccountOptions('rec-tr-to', null);
+  document.getElementById('rec-tr-from').value = r.fromAccountId || '';
+  document.getElementById('rec-tr-to').value   = r.toAccountId   || '';
+  document.getElementById('rec-tr-sheet-bg').classList.add('open');
+}
+
 function closeRecTransferSheet() { document.getElementById('rec-tr-sheet-bg').classList.remove('open'); }
 
 function saveRecTransfer() {
@@ -1337,10 +1406,16 @@ function saveRecTransfer() {
   const toId   = document.getElementById('rec-tr-to').value;
   if (!day || day < 1 || day > 31 || !amount || !name) { alert('모든 항목을 입력해주세요.'); return; }
   if (fromId === toId) { alert('출금 계좌와 입금 계좌가 같습니다.'); return; }
-  recurringTransfers.push({ id: uid(), day, amount, name, fromAccountId: fromId, toAccountId: toId });
+  if (editingRecTrId) {
+    const idx = recurringTransfers.findIndex(r => r.id === editingRecTrId);
+    if (idx !== -1) recurringTransfers[idx] = { ...recurringTransfers[idx], day, amount, name, fromAccountId: fromId, toAccountId: toId };
+  } else {
+    recurringTransfers.push({ id: uid(), day, amount, name, fromAccountId: fromId, toAccountId: toId });
+  }
   saveData(); closeRecTransferSheet(); render();
 }
 
+function deleteRecTransferBtn(e, id) { e.stopPropagation(); deleteRecTransfer(id); }
 function deleteRecTransfer(id) {
   deleteWithConfirm('반복 이체 삭제', '이 반복 이체를 삭제할까요?', () => {
     recurringTransfers = recurringTransfers.filter(r => r.id !== id);
@@ -1354,6 +1429,7 @@ function payRecTransfer(id) {
   const date = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`;
   transactions.push({ id: uid(), date, amount: r.amount, type: 'transfer', fromAccountId: r.fromAccountId, toAccountId: r.toAccountId, desc: r.name, recurring: true, recurringId: r.id });
   saveData(); render();
+  showToast('✓ 이체 내역에 등록됐어요');
 }
 
 // ── BUDGET SHEET ───────────────────────────────────────────────────────
@@ -1379,7 +1455,13 @@ function saveBudget() {
   saveData(); closeBudgetSheet(); render();
 }
 
-// ── CUSTOM CONFIRM ─────────────────────────────────────────────────────
+// ── TOAST ──────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
 function deleteWithConfirm(title, desc, onOk) {
   document.getElementById('confirm-title').textContent = title;
   document.getElementById('confirm-desc').textContent  = desc;
