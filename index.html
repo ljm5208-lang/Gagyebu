@@ -372,6 +372,26 @@ body {
 .rec-amount { font-size: 15px; font-weight: 700; color: var(--expense); }
 .rec-amount.transfer { color: var(--purple); }
 
+.filter-dropdown-wrap { position: relative; flex-shrink: 0; }
+.filter-dropdown {
+  display: none;
+  position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 40; min-width: 160px; overflow: hidden;
+}
+.filter-dropdown.open { display: block; }
+.filter-dropdown-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px; font-size: 13px; font-weight: 500;
+  color: var(--text-dim); cursor: pointer; transition: background 0.15s;
+  border: none; background: transparent; width: 100%; text-align: left;
+  font-family: inherit;
+}
+.filter-dropdown-item:active { background: var(--bg2); }
+.filter-dropdown-item.active { color: var(--accent); font-weight: 700; background: var(--accent-bg); }
+.filter-dropdown-item + .filter-dropdown-item { border-top: 1px solid var(--border); }
+
 /* ── FILTER BAR ── */
 .filter-bar {
   margin-bottom: 14px;
@@ -591,7 +611,10 @@ body {
           <button class="filter-btn"        data-filter="expense"  onclick="setFilter('expense',this)">지출</button>
           <button class="filter-btn"        data-filter="income"   onclick="setFilter('income',this)">수입</button>
           <button class="filter-btn"        data-filter="transfer" onclick="setFilter('transfer',this)">이체</button>
-          <div id="acc-filter-btns"></div>
+          <div class="filter-dropdown-wrap">
+            <button class="filter-btn" id="acc-dropdown-btn" onclick="toggleAccDropdown()">계좌 ▾</button>
+            <div class="filter-dropdown" id="acc-dropdown"></div>
+          </div>
         </div>
       </div>
       <div id="tx-container"></div>
@@ -1023,25 +1046,54 @@ function renderCatList(elId, txs, type) {
 }
 
 // ── TRANSACTIONS ───────────────────────────────────────────────────────
+function toggleAccDropdown() {
+  const dd = document.getElementById('acc-dropdown');
+  if (!dd) return;
+  const isOpen = dd.classList.contains('open');
+  // 드롭다운 내용 갱신
+  dd.innerHTML = accounts.length
+    ? accounts.map(a => `
+        <button class="filter-dropdown-item ${currentFilter === 'acc:' + a.id ? 'active' : ''}"
+          onclick="setAccFilter('acc:${a.id}')">
+          ${ACC_TYPE_ICON[a.type]} ${a.name}
+        </button>`).join('')
+    : '<div class="filter-dropdown-item" style="color:var(--text-muted);cursor:default;">계좌 없음</div>';
+  dd.classList.toggle('open', !isOpen);
+}
+
+function setAccFilter(filter) {
+  currentFilter = filter;
+  // 타입 버튼 active 해제
+  document.querySelectorAll('.filter-btn:not(#acc-dropdown-btn)').forEach(b => b.classList.remove('active'));
+  // 드롭다운 버튼 active 표시
+  const accName = accounts.find(a => 'acc:' + a.id === filter)?.name || '';
+  document.getElementById('acc-dropdown-btn').textContent = accName + ' ▾';
+  document.getElementById('acc-dropdown-btn').classList.add('active');
+  document.getElementById('acc-dropdown').classList.remove('open');
+  renderTx();
+}
+
 function setFilter(filter, btn) {
   currentFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  // 드롭다운 버튼 텍스트 초기화
+  const ddBtn = document.getElementById('acc-dropdown-btn');
+  if (ddBtn) ddBtn.textContent = '계좌 ▾';
+  document.getElementById('acc-dropdown')?.classList.remove('open');
   renderTx();
 }
 
+// 드롭다운 외부 클릭 시 닫기
+document.addEventListener('click', e => {
+  const wrap = document.querySelector('.filter-dropdown-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('acc-dropdown')?.classList.remove('open');
+  }
+});
+
 function renderTx() {
   const el = document.getElementById('tx-container');
-
-  // 계좌 필터 버튼 동적 생성
-  const accFilterEl = document.getElementById('acc-filter-btns');
-  if (accFilterEl) {
-    accFilterEl.innerHTML = accounts.map(a => `
-      <button class="filter-btn ${currentFilter === 'acc:' + a.id ? 'active' : ''}"
-        onclick="setFilter('acc:${a.id}',this)">
-        ${ACC_TYPE_ICON[a.type]} ${a.name}
-      </button>`).join('');
-  }
 
   // 이번 달 전체 내역
   let allTx = transactions.filter(t => {
