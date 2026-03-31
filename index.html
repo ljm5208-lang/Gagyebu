@@ -375,10 +375,10 @@ body {
 .filter-dropdown-wrap { position: relative; flex-shrink: 0; }
 .filter-dropdown {
   display: none;
-  position: absolute; top: calc(100% + 6px); left: 0;
+  position: fixed;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  z-index: 40; min-width: 160px; overflow: hidden;
+  border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 200; min-width: 160px; overflow: hidden;
 }
 .filter-dropdown.open { display: block; }
 .filter-dropdown-item {
@@ -1047,9 +1047,13 @@ function renderCatList(elId, txs, type) {
 
 // ── TRANSACTIONS ───────────────────────────────────────────────────────
 function toggleAccDropdown() {
-  const dd = document.getElementById('acc-dropdown');
-  if (!dd) return;
+  const dd  = document.getElementById('acc-dropdown');
+  const btn = document.getElementById('acc-dropdown-btn');
+  if (!dd || !btn) return;
+
   const isOpen = dd.classList.contains('open');
+  if (isOpen) { dd.classList.remove('open'); return; }
+
   // 드롭다운 내용 갱신
   dd.innerHTML = accounts.length
     ? accounts.map(a => `
@@ -1058,7 +1062,12 @@ function toggleAccDropdown() {
           ${ACC_TYPE_ICON[a.type]} ${a.name}
         </button>`).join('')
     : '<div class="filter-dropdown-item" style="color:var(--text-muted);cursor:default;">계좌 없음</div>';
-  dd.classList.toggle('open', !isOpen);
+
+  // 버튼 위치 기준으로 드롭다운 위치 계산
+  const rect = btn.getBoundingClientRect();
+  dd.style.top  = (rect.bottom + 6) + 'px';
+  dd.style.left = rect.left + 'px';
+  dd.classList.add('open');
 }
 
 function setAccFilter(filter) {
