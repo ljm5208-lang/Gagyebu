@@ -632,18 +632,18 @@ body {
     <!-- RECURRING -->
     <div class="view" id="view-recurring">
       <div class="card anim">
+        <div class="card-title">이번 달 현황</div>
+        <div id="recurring-month-status"></div>
+      </div>
+      <div class="card anim" style="animation-delay:0.06s;">
         <div class="card-title">반복 지출 <div class="badge" id="rec-total-badge">합계: ₩0</div></div>
         <div id="recurring-list"></div>
         <button class="section-add-btn" onclick="openRecurringSheet()">+ 반복 지출 추가</button>
       </div>
-      <div class="card anim" style="animation-delay:0.06s;">
+      <div class="card anim" style="animation-delay:0.12s;">
         <div class="card-title">반복 이체 <div class="badge" id="rec-tr-total-badge">합계: ₩0</div></div>
         <div id="recurring-transfer-list"></div>
         <button class="section-add-btn" onclick="openRecTransferSheet()">+ 반복 이체 추가</button>
-      </div>
-      <div class="card anim" style="animation-delay:0.12s;">
-        <div class="card-title">이번 달 현황</div>
-        <div id="recurring-month-status"></div>
       </div>
     </div>
 
@@ -1614,4 +1614,4 @@ setType('expense');
 render();
 </script>
 </body>
-</html>
+                                                                      </html>
