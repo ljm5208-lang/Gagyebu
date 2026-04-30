@@ -1138,8 +1138,17 @@ function renderTx() {
   el.innerHTML = Object.entries(groups).map(([date, items]) => {
     const d   = new Date(date);
     const day = ['일','월','화','수','목','금','토'][d.getDay()];
+    const dailyExp = items.filter(t => t.type === 'expense').reduce((a, b) => a + b.amount, 0);
+    const dailyInc = items.filter(t => t.type === 'income').reduce((a, b) => a + b.amount, 0);
+    const dailySummary = [
+      dailyExp > 0 ? `<span style="color:var(--expense);">-${fmt(dailyExp)}</span>` : '',
+      dailyInc > 0 ? `<span style="color:var(--income);">+${fmt(dailyInc)}</span>` : ''
+    ].filter(Boolean).join(' ');
     return `<div class="tx-section">
-      <div class="tx-date-label">${d.getMonth() + 1}월 ${d.getDate()}일 (${day})</div>
+      <div class="tx-date-label" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>${d.getMonth() + 1}월 ${d.getDate()}일 (${day})</span>
+        <span style="font-size:11px;font-weight:600;">${dailySummary}</span>
+      </div>
       ${items.map(t => {
         const accName = t.type === 'transfer'
           ? (accounts.find(a => a.id === t.fromAccountId)?.name || '') + ' → ' + (accounts.find(a => a.id === t.toAccountId)?.name || '')
@@ -1614,4 +1623,4 @@ setType('expense');
 render();
 </script>
 </body>
-                                                                      </html>
+</html>
