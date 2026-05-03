@@ -623,7 +623,10 @@ body {
     <!-- ACCOUNTS -->
     <div class="view" id="view-accounts">
       <div class="card anim">
-        <div class="card-title">계좌 목록 <div class="badge" id="total-asset-badge">총 ₩0</div></div>
+        <div class="card-title">
+          계좌 목록 <div class="badge" id="total-asset-badge">총 ₩0</div>
+          <button id="acc-sort-btn" onclick="toggleAccSort()" style="font-size:11px;padding:5px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-weight:600;cursor:pointer;font-family:inherit;">종류순 ↑</button>
+        </div>
         <div id="accounts-list"></div>
         <button class="section-add-btn" onclick="openAccountSheet()">+ 계좌 추가</button>
       </div>
@@ -836,6 +839,7 @@ let modalType    = 'expense';
 let selectedAccType  = 'checking';
 let editingTxId      = null;
 let editingAccountId = null;
+let accSortOrder     = 'asc'; // asc | desc
 
 let transactions       = load('hb_tx',       []);
 let recurringItems     = load('hb_rec',      []);
@@ -1178,6 +1182,15 @@ function renderTx() {
 }
 
 // ── ACCOUNTS ───────────────────────────────────────────────────────────
+const ACC_TYPE_ORDER = { checking: 1, savings: 2, investment: 3, card: 4, cash: 5 };
+
+function toggleAccSort() {
+  accSortOrder = accSortOrder === 'asc' ? 'desc' : 'asc';
+  const btn = document.getElementById('acc-sort-btn');
+  if (btn) btn.textContent = `종류순 ${accSortOrder === 'asc' ? '↑' : '↓'}`;
+  renderAccounts();
+}
+
 function renderAccounts() {
   const el    = document.getElementById('accounts-list');
   const total = getTotalAsset();
@@ -1187,7 +1200,13 @@ function renderAccounts() {
     el.innerHTML = '<div class="empty-state" style="padding:24px 0;"><div class="empty-icon">🏦</div><div class="empty-text">계좌를 추가해보세요.</div></div>';
     return;
   }
-  el.innerHTML = accounts.map(acc => {
+
+  const sorted = [...accounts].sort((a, b) => {
+    const diff = (ACC_TYPE_ORDER[a.type] || 9) - (ACC_TYPE_ORDER[b.type] || 9);
+    return accSortOrder === 'asc' ? diff : -diff;
+  });
+
+  el.innerHTML = sorted.map(acc => {
     const bal = getAccountBalance(acc.id);
     return `<div class="account-full-card" onclick="openEditAccountSheet('${acc.id}')" style="cursor:pointer;">
       <div class="afc-icon type-${acc.type}">${ACC_TYPE_ICON[acc.type]}</div>
