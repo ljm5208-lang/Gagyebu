@@ -12,7 +12,7 @@
 </style>
 </head>
 <body>
-<div id="authView" class="auth hidden">
+<div id="authView" class="auth">
  <div class="top"><div class="brand">우리집 <span>살림노트</span></div></div>
  <div class="card"><div class="eyebrow">SMALL HABITS, BETTER DAYS</div><h1 style="margin:10px 0 6px">함께 기록하고,<br>기분 좋게 아껴요.</h1><p class="subtle" style="margin:0 0 22px">부부가 함께 쓰는 수입·지출 가계부</p>
  <div class="tabs"><button id="loginTab" class="active" type="button">로그인</button><button id="signupTab" type="button">회원가입</button></div>
@@ -71,7 +71,7 @@ $('catForm').onsubmit=async e=>{e.preventDefault();try{const name=$('catName').v
 window.deleteCategory=async id=>{const cat=categories.find(c=>c.id===id);if(!cat)return;if(!confirm('“'+cat.name+'” 카테고리를 삭제할까요? 이미 기록된 거래 내역은 보존됩니다.'))return;const r=await db.from('categories').update({is_active:false}).eq('id',id).eq('household_id',household.id);if(r.error)notice(r.error.message);else{await loadData();notice('카테고리를 숨겼어요. 기존 거래 기록은 유지됩니다.')}};
 document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-scroll]').forEach(x=>x.classList.toggle('active',x===b));const id=b.dataset.scroll==='summary'?'monthLabel':b.dataset.scroll;$(id)?.scrollIntoView({behavior:'smooth',block:'start'})});
 db.auth.onAuthStateChange(async(event,session)=>{if(event==='SIGNED_IN'&&session?.user){try{await boot()}catch(e){showApp();notice('초기 설정 오류: '+e.message)}}});
-$('txDate').value=isoToday();setAuthMode('login');db.auth.getSession().then(async({data:{session}})=>{if(session){try{await boot()}catch(e){showApp();notice('가계부 초기 설정 오류: '+e.message)}}else showAuth()});
+$('txDate').value=isoToday();setAuthMode('login');try{db.auth.getSession().then(async({data:{session}})=>{if(session){try{await boot()}catch(e){showApp();notice('가계부 초기 설정 오류: '+e.message)}}else showAuth()}).catch(e=>{showAuth();$('authMsg').textContent='연결 오류: '+(e.message||'Supabase에 연결할 수 없습니다.')})}catch(e){showAuth();$('authMsg').textContent='초기화 오류: '+(e.message||'페이지를 초기화할 수 없습니다.')}
 </script>
 </body>
 </html>
